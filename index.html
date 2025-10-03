@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Chronomètre de Musculation</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        :root {
+            --prep-color: #ff9800; /* Orange */
+            --action-color: #007bff; /* Bleu */
+            --pause-color: #17a2b8; /* Cyan */
+            --done-color: #28a745; /* Vert */
+        }
+        html, body { height: 100%; width: 100%; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; margin: 0; background-color: #f0f2f5; }
+        #app { text-align: center; background: white; padding: 2rem 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        textarea { width: 95%; min-height: 150px; margin-bottom: 1rem; border-radius: 4px; border: 1px solid #ccc; padding: 0.5rem; font-size: 1rem; }
+        button { padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; border: none; background-color: var(--action-color); color: white; border-radius: 8px; width: 90%; }
+        h1 { margin-top: 0; margin-bottom: 0.5rem; font-size: 2.5rem; font-weight: bold; color: #333; white-space: normal; overflow-wrap: break-word; }
+        #timerDisplay { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; transition: color 0.5s; white-space: nowrap; }
+        .phase-label { font-size: 1.5rem; color: #6c757d; margin-bottom: 1rem; }
+        .pause-btn { position: absolute; top: 20px; left: 20px; width: 50px; height: 50px; padding: 0; font-size: 1.5rem; border-radius: 50%; z-index: 10; background-color: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); color: #333; }
+        .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: #6c757d; background: #f0f2f5; padding: 11px 2px; border-radius: 8px; }
+        .timer-prep { color: var(--prep-color); }
+        .timer-action { color: var(--action-color); }
+        .timer-pause { color: var(--pause-color); }
+        .timer-done { color: var(--done-color); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div v-if="!isWorkoutStarted">
+        <h2>Programme (JSON)</h2>
+        <textarea v-model="jsonInput"></textarea>
+        <br>
+        <button @click="startWorkout">Commencer la séance</button>
+    </div>
+
+    <div v-if="isWorkoutStarted">
+        <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
+        <div class="total-time-display">{{ formattedTotalTime }}</div>
+        <h1>{{ exerciseName }}</h1>
+        <p class="phase-label">{{ phaseLabel }}</p>
+        <div id="timerDisplay" :class="timerClass">{{ timerDisplay }}</div>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                jsonInput: JSON.stringify([
+                    { "nom": "Échauffement", "temps": { "secondes": 15 }, "pause_after": 5, "countdown_before": 3 },
+                    { "nom": "Pompes", "temps": { "secondes": 10 }, "pause_after": 5, "countdown_before": 3 },
+                    { "nom": "Gainage", "temps": { "secondes": 10 }, "pause_after": 0, "countdown_before": 3 }
+                ], null, 2),
+                workoutPlan: [],
+                currentExerciseIndex: -1,
+                isPaused: false,
+                totalWorkoutTime: 0,
+                totalTimeInterval: null,
+                exerciseName: '',
+                timerDisplay: '',
+                phaseLabel: '',
+                timerClass: '',
+                countdownInterval: null,
+                isWorkoutStarted: false,
+                wakeLock: null,
+                audioContext: null
+            };
+        },
+        computed: {
+            formattedTotalTime() {
+                if (this.totalWorkoutTime <= 0) return '00:00';
+                const minutes = Math.floor(this.totalWorkoutTime / 60);
+                const seconds = this.totalWorkoutTime % 60;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+        },
+        methods: {
+            // --- Fonctions utilitaires ---
+            speak(text, lang = 'en-US') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.9; window.speechSynthesis.speak(u); } },
+            beep(freq = 880, duration = 100) { if (!this.audioContext) return; const o = this.audioContext.createOscillator(); const g = this.audioContext.createGain(); o.connect(g); o.frequency.value = freq; o.type = 'sine'; g.connect(this.audioContext.destination); g.gain.setValueAtTime(1, this.audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration / 1000); o.start(); o.stop(this.audioContext.currentTime + duration / 1000); },
+            playTripleBeep() { this.beep(600, 50); setTimeout(() => this.beep(600, 50), 150); setTimeout(() => this.beep(600, 50), 300); },
+            vibrate(pattern) { if ('vibrate' in navigator) navigator.vibrate(pattern); },
+            async requestWakeLock() { if ('wakeLock' in navigator && !this.isPaused) try { this.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { console.error(e); } },
+            async releaseWakeLock() { if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; } },
+
+            // --- Logique de la séance ---
+            togglePause() {
+                this.isPaused = !this.isPaused;
+                if (this.isPaused) {
+                    if ('speechSynthesis' in window) window.speechSynthesis.pause();
+                    this.releaseWakeLock();
+                } else {
+                    if ('speechSynthesis' in window) window.speechSynthesis.resume();
+                    this.requestWakeLock();
+                }
+            },
+            startWorkout() {
+                if (!this.audioContext) this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (this.countdownInterval) clearInterval(this.countdownInterval);
+                if (this.totalTimeInterval) clearInterval(this.totalTimeInterval);
+                try {
+                    const plan = JSON.parse(this.jsonInput);
+                    if (!Array.isArray(plan) || plan.length === 0) throw new Error("Le JSON doit être une liste d'exercices.");
+                    this.workoutPlan = plan;
+                    this.currentExerciseIndex = -1;
+                    this.isWorkoutStarted = true;
+                    this.isPaused = false;
+
+                    let total = 0;
+                    plan.forEach((ex, index) => {
+                        total += ex.countdown_before || 0;
+                        total += ex.temps.secondes || 0;
+                        if (index < plan.length - 1) total += ex.pause_after || 0;
+                    });
+                    this.totalWorkoutTime = total;
+
+                    this.totalTimeInterval = setInterval(() => {
+                        if (!this.isPaused && this.totalWorkoutTime > 0) this.totalWorkoutTime--;
+                    }, 1000);
+
+                    this.requestWakeLock();
+                    this.startNextExercise();
+                } catch (error) {
+                    alert(error.message || 'Erreur dans le format JSON !');
+                }
+            },
+            startNextExercise() {
+                this.currentExerciseIndex++;
+                if (this.currentExerciseIndex >= this.workoutPlan.length) { this.finishWorkout(); return; }
+                const exercise = this.workoutPlan[this.currentExerciseIndex];
+                this.exerciseName = exercise.nom.toUpperCase();
+                this.startPreparation(exercise);
+            },
+            startPreparation(data) {
+                let prepTime = data.countdown_before || 0;
+                this.phaseLabel = 'Préparation'; this.timerClass = 'timer-prep'; this.timerDisplay = prepTime;
+                if (prepTime > 0) {
+                    this.countdownInterval = setInterval(() => {
+                        if (this.isPaused) return;
+                        prepTime--; this.timerDisplay = prepTime;
+                        if (prepTime > 0 && prepTime <= 3) this.beep(880, 100);
+                        if (prepTime <= 0) { clearInterval(this.countdownInterval); this.startMainTimer(data); }
+                    }, 1000);
+                } else { this.startMainTimer(data); }
+            },
+            startMainTimer(data) {
+                this.beep(1200, 150); this.vibrate(100); this.phaseLabel = 'Action !'; this.timerClass = 'timer-action';
+                const initialTotalSeconds = data.temps.secondes || 0;
+                let totalSeconds = initialTotalSeconds; let halfTimeAnnounced = false;
+                const updateDisplay = () => { if (totalSeconds < 0) return; this.timerDisplay = `${String(Math.floor(totalSeconds / 60)).padStart(2, '0')}:${String(totalSeconds % 60).padStart(2, '0')}`; };
+                updateDisplay();
+                this.countdownInterval = setInterval(() => {
+                    if (this.isPaused) return;
+                    totalSeconds--;
+                    if (totalSeconds === 10) this.speak('Ten seconds left', 'en-US');
+                    if (totalSeconds > 0 && totalSeconds <= 4) this.beep(880, 100);
+                    if (!halfTimeAnnounced && totalSeconds > 0 && totalSeconds <= initialTotalSeconds / 2) {
+                        this.phaseLabel = 'Half time !'; this.playTripleBeep(); this.vibrate([50, 50, 50]); this.speak('Half time!', 'en-US'); halfTimeAnnounced = true;
+                        setTimeout(() => { if (this.phaseLabel === 'Half time !') this.phaseLabel = 'Action !'; }, 2000);
+                    }
+                    updateDisplay();
+                    if (totalSeconds < 0) { clearInterval(this.countdownInterval); this.startPause(data); }
+                }, 1000);
+            },
+            startPause(data) {
+                this.beep(1400, 200);
+                const pauseTime = data.pause_after || 0;
+                if (pauseTime > 0) {
+                    this.phaseLabel = 'Pause'; this.timerClass = 'timer-pause'; let remainingPause = pauseTime;
+                    this.timerDisplay = remainingPause;
+                    this.countdownInterval = setInterval(() => {
+                        if (this.isPaused) return;
+                        remainingPause--; this.timerDisplay = remainingPause;
+                        if (remainingPause > 0 && remainingPause <= 3) this.beep(880, 100);
+                        if (remainingPause <= 0) { clearInterval(this.countdownInterval); this.startNextExercise(); }
+                    }, 1000);
+                } else { this.startNextExercise(); }
+            },
+            finishWorkout() {
+                if (this.totalTimeInterval) clearInterval(this.totalTimeInterval);
+                this.totalWorkoutTime = 0;
+                this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done';
+                this.vibrate([200, 100, 200]); this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.releaseWakeLock();
+            }
+        },
+        unmounted() { this.releaseWakeLock(); if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
