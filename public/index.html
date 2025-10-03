@@ -54,23 +54,126 @@
     createApp({
         data() {
             const workouts = {
-                travailFalseGrip: {
-                    name: "False Grip Only",
+                seanceClassique: {
+                    name: "Séance Classique",
                     plan: [
-                        { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 5 }, "pause_after": 0, "countdown_before": 5 },
+                        { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 5 }, "pause_after": 0, "countdown_before": 0 },
                         { 
-                            "nom": "Rowing bas", 
-                            "type": "EMOM", 
-                            "temps": { "every": 5, "during": 5 }, "repeat": { "number": 2, "pause_between": 5 }, 
-                            "pause_after": 0, 
+                            "nom": "Maintien a l'appui", 
+                            "type": "full_time", "temps": { "secondes": 15 }, "pause_after": 15, "countdown_before": 5 
+                        },
+                        { 
+                            "nom": "Maintien a l'appui", 
+                            "type": "full_time", "temps": { "secondes": 15 }, "pause_after": 15, "countdown_before": 5 
+                        },
+                        { 
+                            "nom": "Maintien a l'appui", 
+                            "type": "full_time", "temps": { "secondes": 15 }, "pause_after": 15, "countdown_before": 5 
+                        },
+                        { 
+                            "nom": "Dips", 
+                            "type": "serie", 
+                            "rest": 180,
+                            "number": 3,
+                            "pause_after": 120, 
                             "countdown_before": 10 
                         },
                         { 
-                            "nom": "Rowing haut", 
+                            "nom": "Pompes", 
+                            "type": "serie", 
+                            "rest": 60,
+                            "number": 3,
+                            "pause_after": 60, 
+                            "countdown_before": 10
+                        },
+                        { 
+                            "nom": "Butterfly", 
+                            "type": "serie", 
+                            "rest": 60,
+                            "number": 3,
+                            "pause_after": 60, 
+                            "countdown_before": 10
+                        },
+                        { 
+                            "nom": "Chandelle", 
                             "type": "EMOM", 
-                            "temps": { "every": 5, "during": 5 }, "repeat": { "number": 2, "pause_between": 5 }, 
+                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 3, "pause_between": 30 }, 
+                            "pause_after": 30, 
+                            "countdown_before": 0 
+                        },
+                        { 
+                            "nom": "Tractions", 
+                            "type": "serie", 
+                            "rest": 180,
+                            "number": 3,
+                            "pause_after": 120, 
+                            "countdown_before": 10 
+                        },
+                        { 
+                            "nom": "Rowing", 
+                            "type": "serie", 
+                            "rest": 60,
+                            "number": 3,
+                            "pause_after": 60, 
+                            "countdown_before": 10
+                        },
+                        { 
+                            "nom": "Butterfly Inversé", 
+                            "type": "serie", 
+                            "rest": 60,
+                            "number": 3,
+                            "pause_after": 60, 
+                            "countdown_before": 10
+                        },
+                        { 
+                            "nom": "Abdo Superman", 
+                            "type": "serie", 
+                            "rest": 30,
+                            "number": 3,
+                            "pause_after": 30, 
+                            "countdown_before": 10
+                        },
+                        { 
+                            "nom": "Abdo Remonté Genoux", 
+                            "type": "serie", 
+                            "rest": 30,
+                            "number": 3,
+                            "pause_after": 30, 
+                            "countdown_before": 10
+                        },
+                    ]
+                },
+                travailFalseGrip: {
+                    name: "False Grip Only",
+                    plan: [
+                        { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 360 }, "pause_after": 10, "countdown_before": 10 },
+                        { 
+                            "nom": "Rowing Bas", 
+                            "type": "EMOM", 
+                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
                             "pause_after": 0, 
-                            "countdown_before": 0
+                            "countdown_before": 0 
+                        },
+                        { 
+                            "nom": "Rowing Haut", 
+                            "type": "EMOM", 
+                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
+                            "pause_after": 0, 
+                            "countdown_before": 0 
+                        },
+                        { 
+                            "nom": "Rowing Bas", 
+                            "type": "EMOM", 
+                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
+                            "pause_after": 0, 
+                            "countdown_before": 0 
+                        },
+                        { 
+                            "nom": "Rowing Haut", 
+                            "type": "EMOM", 
+                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
+                            "pause_after": 0, 
+                            "countdown_before": 0 
                         },
                     ]
                 },
@@ -177,8 +280,13 @@
                     if (ex.type === 'EMOM') total += (ex.temps.during || 0) * repeats;
                     else if (ex.type === 'full_time') total += (ex.temps.secondes || 0) * repeats;
                     if (ex.type === 'serie') total += (ex.rest || 0) * (repeats - 1);
-                    if (ex.repeat) total += (ex.repeat.pause_between || 0) * (repeats - 1);
-                    if (index < plan.length - 1) total += ex.pause_after || 0;
+
+                    if (ex.type === 'EMOM' && ex.repeat) {
+                        total += (ex.repeat.pause_between || 0) * (repeats);
+                    } else {
+                        if (ex.repeat) total += (ex.repeat.pause_between || 0) * (repeats - 1);
+                        if (index < plan.length - 1) total += ex.pause_after || 0;
+                    }
                 });
                 this.totalWorkoutTime = total;
                 this.totalTimeInterval = setInterval(() => { if (!this.isPaused && this.totalWorkoutTime > 0) this.totalWorkoutTime--; }, 1000);
@@ -193,6 +301,8 @@
                 } else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
                     this.currentRepetition++;
                     this.runPause(exercise.repeat.pause_between || 0, () => this.startMainTimer(exercise), "Reprise");
+                } else if (exercise.type === 'EMOM' && exercise.repeat && this.currentRepetition === exercise.repeat.number) {
+                    this.runPause(exercise.repeat.pause_between || 0, () => this.startNextExercise(), "Pause");
                 } else {
                     this.runPause(exercise.pause_after || 0, () => this.startNextExercise(), "Pause");
                 }
