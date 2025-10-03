@@ -6,12 +6,7 @@
     <title>Chronomètre de Musculation</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        :root {
-            --prep-color: #ff9800; /* Orange */
-            --action-color: #007bff; /* Bleu */
-            --pause-color: #17a2b8; /* Cyan */
-            --done-color: #28a745; /* Vert */
-        }
+        :root { --prep-color: #ff9800; --action-color: #007bff; --pause-color: #17a2b8; --done-color: #28a745; }
         html, body { height: 100%; width: 100%; overflow: hidden; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; margin: 0; background-color: #f0f2f5; }
         #app { text-align: center; background: white; padding: 2rem 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
@@ -21,7 +16,8 @@
         #timerDisplay { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; transition: color 0.5s; white-space: nowrap; }
         .phase-label { font-size: 1.5rem; color: #6c757d; margin-bottom: 1rem; }
         .pause-btn { position: absolute; top: 20px; left: 20px; width: 50px; height: 50px; padding: 0; font-size: 1.5rem; border-radius: 50%; z-index: 10; background-color: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); color: #333; }
-        .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: #6c757d; background: #f0f2f5; padding: 11px 2px; border-radius: 8px; }
+        .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: #6c757d; background: #f0f2f5; padding: 5px 10px; border-radius: 8px; }
+        .ok-btn { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: 70%; max-width: 300px; padding: 20px; font-size: 1.8rem; border-radius: 10px; background-color: var(--done-color); }
         .timer-prep { color: var(--prep-color); }
         .timer-action { color: var(--action-color); }
         .timer-pause { color: var(--pause-color); }
@@ -29,7 +25,6 @@
     </style>
 </head>
 <body>
-
 <div id="app">
     <div v-if="!isWorkoutStarted">
         <h2>Programme (JSON)</h2>
@@ -37,70 +32,42 @@
         <br>
         <button @click="startWorkout">Commencer la séance</button>
     </div>
-
     <div v-if="isWorkoutStarted">
         <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
         <div class="total-time-display">{{ formattedTotalTime }}</div>
         <h1>{{ exerciseName }}</h1>
         <p class="phase-label">{{ phaseLabel }}</p>
         <div id="timerDisplay" :class="timerClass">{{ timerDisplay }}</div>
+        <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
     </div>
 </div>
-
 <script>
     const { createApp } = Vue;
-
     createApp({
         data() {
             return {
                 jsonInput: JSON.stringify([
-                    { "nom": "Échauffement", "temps": { "secondes": 15 }, "pause_after": 5, "countdown_before": 3 },
-                    { "nom": "Pompes", "temps": { "secondes": 10 }, "pause_after": 5, "countdown_before": 3 },
-                    { "nom": "Gainage", "temps": { "secondes": 10 }, "pause_after": 0, "countdown_before": 3 }
+                    { "nom": "Course", "type": "full_time", "temps": { "secondes": 20 }, "pause_after": 5, "countdown_before": 3 },
+                    { "nom": "Traction australienne", "type": "serie", "number": 3, "rest": 10, "pause_after": 5, "countdown_before": 5 }
                 ], null, 2),
                 workoutPlan: [],
-                currentExerciseIndex: -1,
-                isPaused: false,
-                totalWorkoutTime: 0,
-                totalTimeInterval: null,
-                exerciseName: '',
-                timerDisplay: '',
-                phaseLabel: '',
-                timerClass: '',
-                countdownInterval: null,
-                isWorkoutStarted: false,
-                wakeLock: null,
-                audioContext: null
+                currentExerciseIndex: -1, currentRepetition: 0, isPaused: false, isSerieMode: false,
+                totalWorkoutTime: 0, totalTimeInterval: null,
+                exerciseName: '', timerDisplay: '', phaseLabel: '', timerClass: '',
+                countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null
             };
         },
-        computed: {
-            formattedTotalTime() {
-                if (this.totalWorkoutTime <= 0) return '00:00';
-                const minutes = Math.floor(this.totalWorkoutTime / 60);
-                const seconds = this.totalWorkoutTime % 60;
-                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            }
-        },
+        computed: { formattedTotalTime() { if (this.totalWorkoutTime <= 0) return '00:00'; const m = Math.floor(this.totalWorkoutTime / 60); const s = this.totalWorkoutTime % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; } },
         methods: {
             // --- Fonctions utilitaires ---
             speak(text, lang = 'en-US') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.9; window.speechSynthesis.speak(u); } },
             beep(freq = 880, duration = 100) { if (!this.audioContext) return; const o = this.audioContext.createOscillator(); const g = this.audioContext.createGain(); o.connect(g); o.frequency.value = freq; o.type = 'sine'; g.connect(this.audioContext.destination); g.gain.setValueAtTime(1, this.audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration / 1000); o.start(); o.stop(this.audioContext.currentTime + duration / 1000); },
-            playTripleBeep() { this.beep(600, 50); setTimeout(() => this.beep(600, 50), 150); setTimeout(() => this.beep(600, 50), 300); },
             vibrate(pattern) { if ('vibrate' in navigator) navigator.vibrate(pattern); },
             async requestWakeLock() { if ('wakeLock' in navigator && !this.isPaused) try { this.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { console.error(e); } },
             async releaseWakeLock() { if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; } },
 
             // --- Logique de la séance ---
-            togglePause() {
-                this.isPaused = !this.isPaused;
-                if (this.isPaused) {
-                    if ('speechSynthesis' in window) window.speechSynthesis.pause();
-                    this.releaseWakeLock();
-                } else {
-                    if ('speechSynthesis' in window) window.speechSynthesis.resume();
-                    this.requestWakeLock();
-                }
-            },
+            togglePause() { this.isPaused = !this.isPaused; if (this.isPaused) { if ('speechSynthesis' in window) window.speechSynthesis.pause(); this.releaseWakeLock(); } else { if ('speechSynthesis' in window) window.speechSynthesis.resume(); this.requestWakeLock(); } },
             startWorkout() {
                 if (!this.audioContext) this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 if (this.countdownInterval) clearInterval(this.countdownInterval);
@@ -108,52 +75,49 @@
                 try {
                     const plan = JSON.parse(this.jsonInput);
                     if (!Array.isArray(plan) || plan.length === 0) throw new Error("Le JSON doit être une liste d'exercices.");
-                    this.workoutPlan = plan;
-                    this.currentExerciseIndex = -1;
-                    this.isWorkoutStarted = true;
-                    this.isPaused = false;
-
+                    this.workoutPlan = plan; this.currentExerciseIndex = -1; this.isWorkoutStarted = true; this.isPaused = false; this.isSerieMode = false;
                     let total = 0;
                     plan.forEach((ex, index) => {
-                        total += ex.countdown_before || 0;
-                        total += ex.temps.secondes || 0;
+                        const repeats = ex.repeat ? ex.repeat.number : (ex.type === 'serie' ? ex.number : 1);
+                        total += (ex.countdown_before || 0);
+                        if (ex.type === 'EMOM') total += (ex.temps.during || 0) * repeats;
+                        else if (ex.type === 'full_time') total += (ex.temps.secondes || 0) * repeats;
+                        if (ex.type === 'serie') total += (ex.rest || 0) * (repeats - 1);
+                        if (ex.repeat) total += (ex.repeat.pause_between || 0) * (repeats - 1);
                         if (index < plan.length - 1) total += ex.pause_after || 0;
                     });
                     this.totalWorkoutTime = total;
-
-                    this.totalTimeInterval = setInterval(() => {
-                        if (!this.isPaused && this.totalWorkoutTime > 0) this.totalWorkoutTime--;
-                    }, 1000);
-
+                    this.totalTimeInterval = setInterval(() => { if (!this.isPaused && this.totalWorkoutTime > 0) this.totalWorkoutTime--; }, 1000);
                     this.requestWakeLock();
                     this.startNextExercise();
-                } catch (error) {
-                    alert(error.message || 'Erreur dans le format JSON !');
+                } catch (error) { alert(error.message || 'Erreur dans le format JSON !'); }
+            },
+            decideNextStep() {
+                const exercise = this.workoutPlan[this.currentExerciseIndex];
+                if (exercise.type === 'serie' && this.currentRepetition < exercise.number) {
+                    this.currentRepetition++;
+                    this.runPause(exercise.rest || 0, () => this.startSerieMode(exercise), `Repos série`);
+                } else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
+                    this.currentRepetition++;
+                    this.runPause(exercise.repeat.pause_between || 0, () => this.startMainTimer(exercise), "Reprise");
+                } else {
+                    this.runPause(exercise.pause_after || 0, () => this.startNextExercise(), "Pause");
                 }
             },
             startNextExercise() {
+                this.isSerieMode = false;
                 this.currentExerciseIndex++;
                 if (this.currentExerciseIndex >= this.workoutPlan.length) { this.finishWorkout(); return; }
+                this.currentRepetition = 1;
                 const exercise = this.workoutPlan[this.currentExerciseIndex];
                 this.exerciseName = exercise.nom.toUpperCase();
                 this.startPreparation(exercise);
             },
-            startPreparation(data) {
-                let prepTime = data.countdown_before || 0;
-                this.phaseLabel = 'Préparation'; this.timerClass = 'timer-prep'; this.timerDisplay = prepTime;
-                if (prepTime > 0) {
-                    this.countdownInterval = setInterval(() => {
-                        if (this.isPaused) return;
-                        prepTime--; this.timerDisplay = prepTime;
-                        if (prepTime > 0 && prepTime <= 3) this.beep(880, 100);
-                        if (prepTime <= 0) { clearInterval(this.countdownInterval); this.startMainTimer(data); }
-                    }, 1000);
-                } else { this.startMainTimer(data); }
-            },
-            startMainTimer(data) {
-                this.beep(1200, 150); this.vibrate(100); this.phaseLabel = 'Action !'; this.timerClass = 'timer-action';
-                const initialTotalSeconds = data.temps.secondes || 0;
-                let totalSeconds = initialTotalSeconds; let halfTimeAnnounced = false;
+            startPreparation(data) { this.runPause(data.countdown_before || 0, () => this.startMainTimer(data), "Préparation"); },
+            startMainTimer(data) { this.beep(1200, 150); this.vibrate(100); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); else this.startFullTimeTimer(data); },
+            startFullTimeTimer(data) {
+                this.phaseLabel = 'Action !'; this.timerClass = 'timer-action';
+                const initialTotalSeconds = data.temps.secondes || 0; let totalSeconds = initialTotalSeconds; let halfTimeAnnounced = false;
                 const updateDisplay = () => { if (totalSeconds < 0) return; this.timerDisplay = `${String(Math.floor(totalSeconds / 60)).padStart(2, '0')}:${String(totalSeconds % 60).padStart(2, '0')}`; };
                 updateDisplay();
                 this.countdownInterval = setInterval(() => {
@@ -161,38 +125,54 @@
                     totalSeconds--;
                     if (totalSeconds === 10) this.speak('Ten seconds left', 'en-US');
                     if (totalSeconds > 0 && totalSeconds <= 4) this.beep(880, 100);
-                    if (!halfTimeAnnounced && totalSeconds > 0 && totalSeconds <= initialTotalSeconds / 2) {
-                        this.phaseLabel = 'Half time !'; this.playTripleBeep(); this.vibrate([50, 50, 50]); this.speak('Half time!', 'en-US'); halfTimeAnnounced = true;
-                        setTimeout(() => { if (this.phaseLabel === 'Half time !') this.phaseLabel = 'Action !'; }, 2000);
-                    }
+                    if (!halfTimeAnnounced && totalSeconds > 0 && totalSeconds <= initialTotalSeconds / 2) { this.phaseLabel = 'Half time !'; this.speak('Half time!', 'en-US'); halfTimeAnnounced = true; setTimeout(() => { if (this.phaseLabel === 'Half time !') this.phaseLabel = 'Action !'; }, 2000); }
                     updateDisplay();
-                    if (totalSeconds < 0) { clearInterval(this.countdownInterval); this.startPause(data); }
+                    if (totalSeconds < 0) { clearInterval(this.countdownInterval); this.decideNextStep(); }
                 }, 1000);
             },
-            startPause(data) {
+            startEmomTimer(data) {
+                this.timerClass = 'timer-action';
+                let totalDuration = data.temps.during || 0; const roundDuration = data.temps.every || 60; let currentRoundTime = roundDuration; let halfTimeAnnouncedInRound = false;
+                const updateEmomDisplay = () => { this.phaseLabel = `EMOM - ${String(Math.floor(totalDuration/60)).padStart(2,'0')}:${String(totalDuration%60).padStart(2,'0')}`; this.timerDisplay = `${String(Math.floor(currentRoundTime/60)).padStart(2,'0')}:${String(currentRoundTime%60).padStart(2,'0')}`; };
+                updateEmomDisplay();
+                this.countdownInterval = setInterval(() => {
+                    if (this.isPaused) return;
+                    totalDuration--; currentRoundTime--;
+                    if (currentRoundTime === 10) this.speak('Ten seconds left', 'en-US');
+                    if (currentRoundTime > 0 && currentRoundTime <= 4) this.beep(880, 100);
+                    if (!halfTimeAnnouncedInRound && currentRoundTime > 0 && currentRoundTime <= roundDuration / 2) { this.speak('Half time!', 'en-US'); halfTimeAnnouncedInRound = true; }
+                    if (currentRoundTime <= 0) { this.beep(1200, 150); currentRoundTime = roundDuration; halfTimeAnnouncedInRound = false; }
+                    updateEmomDisplay();
+                    if (totalDuration < 0) { clearInterval(this.countdownInterval); this.decideNextStep(); }
+                }, 1000);
+            },
+            startSerieMode(data) {
+                this.phaseLabel = `Série ${this.currentRepetition}/${data.number}`;
+                this.timerClass = 'timer-action';
+                this.timerDisplay = 'GO!';
+                this.isSerieMode = true;
+            },
+            finishSerieSet() {
+                this.isSerieMode = false;
+                this.decideNextStep();
+            },
+            runPause(duration, onComplete, label) {
                 this.beep(1400, 200);
-                const pauseTime = data.pause_after || 0;
-                if (pauseTime > 0) {
-                    this.phaseLabel = 'Pause'; this.timerClass = 'timer-pause'; let remainingPause = pauseTime;
-                    this.timerDisplay = remainingPause;
+                if (duration > 0) {
+                    this.phaseLabel = label; this.timerClass = 'timer-pause'; let remaining = duration;
+                    this.timerDisplay = remaining;
                     this.countdownInterval = setInterval(() => {
                         if (this.isPaused) return;
-                        remainingPause--; this.timerDisplay = remainingPause;
-                        if (remainingPause > 0 && remainingPause <= 3) this.beep(880, 100);
-                        if (remainingPause <= 0) { clearInterval(this.countdownInterval); this.startNextExercise(); }
+                        remaining--; this.timerDisplay = remaining;
+                        if (remaining > 0 && remaining <= 3) this.beep(880, 100);
+                        if (remaining <= 0) { clearInterval(this.countdownInterval); onComplete(); }
                     }, 1000);
-                } else { this.startNextExercise(); }
+                } else { onComplete(); }
             },
-            finishWorkout() {
-                if (this.totalTimeInterval) clearInterval(this.totalTimeInterval);
-                this.totalWorkoutTime = 0;
-                this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done';
-                this.vibrate([200, 100, 200]); this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.releaseWakeLock();
-            }
+            finishWorkout() { if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); this.totalWorkoutTime = 0; this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done'; this.vibrate([200, 100, 200]); this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.isSerieMode = false; this.releaseWakeLock(); }
         },
         unmounted() { this.releaseWakeLock(); if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); }
     }).mount('#app');
 </script>
-
 </body>
 </html>
