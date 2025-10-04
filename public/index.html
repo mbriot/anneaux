@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Anneaux !</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>window.workouts = {};</script>
+    <script src="workouts/seanceClassique.js"></script>
+    <script src="workouts/travailFalseGrip.js"></script>
+    <script src="workouts/seanceEmom.js"></script>
     <style>
         :root { --prep-color: #ff9800; --action-color: #007bff; --pause-color: #17a2b8; --done-color: #28a745; }
         html, body { height: 100%; width: 100%; overflow: hidden; }
@@ -19,6 +23,7 @@
         .pause-btn { position: absolute; top: 20px; left: 20px; width: 50px; height: 50px; padding: 0; font-size: 1.5rem; border-radius: 50%; z-index: 10; background-color: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); color: #333; }
         .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: #6c757d; background: #f0f2f5; padding: 5px 10px; border-radius: 8px; }
         .ok-btn { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: 70%; max-width: 300px; padding: 20px; font-size: 1.8rem; border-radius: 10px; background-color: var(--done-color); }
+        .next-btn { width: auto; padding: 10px 20px; font-size: 1rem; background-color: #6c757d; margin-top: 1rem; }
         .next-exercise-label { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; font-size: 1.1rem; color: #6c757d; font-style: italic; }
         .timer-prep { color: var(--prep-color); }
         .timer-action { color: var(--action-color); }
@@ -45,6 +50,7 @@
         <h1>{{ exerciseName }}</h1>
         <p class="phase-label">{{ phaseLabel }}</p>
         <div id="timerDisplay" :class="timerClass">{{ timerDisplay }}</div>
+        <button @click="skipToNextExercise" class="next-btn" v-if="!isSerieMode && currentExerciseIndex < workoutPlan.length">Suivant</button>
         <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
         <p v-if="nextExerciseName" class="next-exercise-label">{{ nextExerciseName }}</p>
     </div>
@@ -53,197 +59,8 @@
     const { createApp } = Vue;
     createApp({
         data() {
-            const workouts = {
-                seanceClassique: {
-                    name: "Séance Classique",
-                    plan: [
-                        { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 5 }, "pause_after": 0, "countdown_before": 0 },
-                        { 
-                            "nom": "Maintien a l'appui", 
-                            "type": "full_time", "temps": { "secondes": 15 }, "pause_after": 15, "countdown_before": 5 
-                        },
-                        { 
-                            "nom": "Maintien a l'appui", 
-                            "type": "full_time", "temps": { "secondes": 15 }, "pause_after": 15, "countdown_before": 5 
-                        },
-                        { 
-                            "nom": "Maintien a l'appui", 
-                            "type": "full_time", "temps": { "secondes": 15 }, "pause_after": 15, "countdown_before": 5 
-                        },
-                        { 
-                            "nom": "Dips", 
-                            "type": "serie", 
-                            "rest": 180,
-                            "number": 3,
-                            "pause_after": 120, 
-                            "countdown_before": 10 
-                        },
-                        { 
-                            "nom": "Pompes", 
-                            "type": "serie", 
-                            "rest": 60,
-                            "number": 3,
-                            "pause_after": 60, 
-                            "countdown_before": 10
-                        },
-                        { 
-                            "nom": "Butterfly", 
-                            "type": "serie", 
-                            "rest": 60,
-                            "number": 3,
-                            "pause_after": 60, 
-                            "countdown_before": 10
-                        },
-                        { 
-                            "nom": "Chandelle", 
-                            "type": "EMOM", 
-                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 3, "pause_between": 30 }, 
-                            "pause_after": 30, 
-                            "countdown_before": 0 
-                        },
-                        { 
-                            "nom": "Tractions", 
-                            "type": "serie", 
-                            "rest": 180,
-                            "number": 3,
-                            "pause_after": 120, 
-                            "countdown_before": 10 
-                        },
-                        { 
-                            "nom": "Rowing", 
-                            "type": "serie", 
-                            "rest": 60,
-                            "number": 3,
-                            "pause_after": 60, 
-                            "countdown_before": 10
-                        },
-                        { 
-                            "nom": "Butterfly Inversé", 
-                            "type": "serie", 
-                            "rest": 60,
-                            "number": 3,
-                            "pause_after": 60, 
-                            "countdown_before": 10
-                        },
-                        { 
-                            "nom": "Abdo Superman", 
-                            "type": "serie", 
-                            "rest": 30,
-                            "number": 3,
-                            "pause_after": 30, 
-                            "countdown_before": 10
-                        },
-                        { 
-                            "nom": "Abdo Remonté Genoux", 
-                            "type": "serie", 
-                            "rest": 30,
-                            "number": 3,
-                            "pause_after": 30, 
-                            "countdown_before": 10
-                        },
-                    ]
-                },
-                travailFalseGrip: {
-                    name: "False Grip Only",
-                    plan: [
-                        { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 360 }, "pause_after": 10, "countdown_before": 10 },
-                        { 
-                            "nom": "Rowing Bas", 
-                            "type": "EMOM", 
-                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
-                            "pause_after": 0, 
-                            "countdown_before": 0 
-                        },
-                        { 
-                            "nom": "Rowing Haut", 
-                            "type": "EMOM", 
-                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
-                            "pause_after": 0, 
-                            "countdown_before": 0 
-                        },
-                        { 
-                            "nom": "Rowing Bas", 
-                            "type": "EMOM", 
-                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
-                            "pause_after": 0, 
-                            "countdown_before": 0 
-                        },
-                        { 
-                            "nom": "Rowing Haut", 
-                            "type": "EMOM", 
-                            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
-                            "pause_after": 0, 
-                            "countdown_before": 0 
-                        },
-                    ]
-                },
-                seanceEmom: {
-                    name: "Séance EMOM",
-                    plan: [
-                    { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 360 }, "pause_after": 5, "countdown_before": 5 },
-                    { 
-                        "nom": "EMOM Tractions", 
-                        "type": "EMOM", 
-                        "temps": { "every": 60, "during": 480 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 30 
-                    },
-                    { 
-                        "nom": "EMOM Dips", 
-                        "type": "EMOM", 
-                        "temps": { "every": 60, "during": 480 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 30  
-                    },
-                    { 
-                        "nom": "Rowing bas", 
-                        "type": "EMOM", 
-                        "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 10 
-                    },
-                    { 
-                        "nom": "EMOM Tractions", 
-                        "type": "EMOM", 
-                        "temps": { "every": 60, "during": 480 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 10 
-                    },
-                    { 
-                        "nom": "EMOM Dips", 
-                        "type": "EMOM", 
-                        "temps": { "every": 60, "during": 480 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 10 
-                    },
-                    { 
-                        "nom": "Rowing bas", 
-                        "type": "EMOM", 
-                        "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 10 
-                    },
-                    { 
-                        "nom": "EMOM Tractions", 
-                        "type": "EMOM", 
-                        "temps": { "every": 60, "during": 480 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 10 
-                    },
-                    { 
-                        "nom": "EMOM Dips", 
-                        "type": "EMOM", 
-                        "temps": { "every": 60, "during": 480 }, 
-                        "pause_after": 30, 
-                        "countdown_before": 10 
-                    },
-                    
-                    ]
-                }
-            };
-
             return {
-                predefinedWorkouts: workouts,
+                predefinedWorkouts: window.workouts,
                 selectedWorkoutPlan: null,
                 workoutPlan: [],
                 currentExerciseIndex: -1, currentRepetition: 0, isPaused: false, isSerieMode: false,
@@ -257,6 +74,7 @@
             nextExerciseName() { const nextIndex = this.currentExerciseIndex + 1; if (this.workoutPlan && nextIndex < this.workoutPlan.length) { return `Suivant : ${this.workoutPlan[nextIndex].nom}`; } return ''; }
         },
         methods: {
+            skipToNextExercise() { if (this.countdownInterval) { clearInterval(this.countdownInterval); } this.startNextExercise(); },
             // ... (toutes les méthodes utilitaires et de logique de séance restent ici, inchangées)
             speak(text, lang = 'en-US') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.9; window.speechSynthesis.speak(u); } },
             beep(freq = 880, duration = 100) { if (!this.audioContext) return; const o = this.audioContext.createOscillator(); const g = this.audioContext.createGain(); o.connect(g); o.frequency.value = freq; o.type = 'sine'; g.connect(this.audioContext.destination); g.gain.setValueAtTime(1, this.audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration / 1000); o.start(); o.stop(this.audioContext.currentTime + duration / 1000); },
