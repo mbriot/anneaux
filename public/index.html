@@ -173,10 +173,16 @@
                 this.beep(1400, 200);
                 if (duration > 0) {
                     this.phaseLabel = label; this.timerClass = 'timer-pause'; let remaining = duration;
+                    let halfTimeAnnounced = false;
                     this.timerDisplay = remaining;
                     this.countdownInterval = setInterval(() => {
                         if (this.isPaused) return;
                         remaining--; this.timerDisplay = remaining;
+                        if (remaining === 10) this.speak('Ten seconds left', 'en-US');
+                        if (!halfTimeAnnounced && remaining > 0 && remaining <= duration / 2) {
+                            this.speak('Half time!', 'en-US');
+                            halfTimeAnnounced = true;
+                        }
                         if (remaining > 0 && remaining <= 3) this.beep(880, 100);
                         if (remaining <= 0) { clearInterval(this.countdownInterval); onComplete(); }
                     }, 1000);
