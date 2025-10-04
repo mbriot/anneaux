@@ -148,7 +148,14 @@
             startEmomTimer(data) {
                 this.timerClass = 'timer-action';
                 let totalDuration = data.temps.during || 0; const roundDuration = data.temps.every || 60; let currentRoundTime = roundDuration; let halfTimeAnnouncedInRound = false;
-                const updateEmomDisplay = () => { this.phaseLabel = `EMOM - ${String(Math.floor(totalDuration/60)).padStart(2,'0')}:${String(totalDuration%60).padStart(2,'0')}`; this.timerDisplay = `${String(Math.floor(currentRoundTime/60)).padStart(2,'0')}:${String(currentRoundTime%60).padStart(2,'0')}`; };
+                const updateEmomDisplay = () => {
+                    if (data.repeat) {
+                        this.phaseLabel = `EMOM ${this.currentRepetition}/${data.repeat.number}`;
+                    } else {
+                        this.phaseLabel = `EMOM - ${String(Math.floor(totalDuration/60)).padStart(2,'0')}:${String(totalDuration%60).padStart(2,'0')}`;
+                    }
+                    this.timerDisplay = `${String(Math.floor(currentRoundTime/60)).padStart(2,'0')}:${String(currentRoundTime%60).padStart(2,'0')}`;
+                };
                 updateEmomDisplay();
                 this.countdownInterval = setInterval(() => {
                     if (this.isPaused) return;
