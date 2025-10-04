@@ -87,7 +87,6 @@
             // ... (toutes les méthodes utilitaires et de logique de séance restent ici, inchangées)
             speak(text, lang = 'en-US') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.9; window.speechSynthesis.speak(u); } },
             beep(freq = 880, duration = 100) { if (!this.audioContext) return; const o = this.audioContext.createOscillator(); const g = this.audioContext.createGain(); o.connect(g); o.frequency.value = freq; o.type = 'sine'; g.connect(this.audioContext.destination); g.gain.setValueAtTime(1, this.audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration / 1000); o.start(); o.stop(this.audioContext.currentTime + duration / 1000); },
-            vibrate(pattern) { if ('vibrate' in navigator) navigator.vibrate(pattern); },
             async requestWakeLock() { if ('wakeLock' in navigator && !this.isPaused) try { this.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { console.error(e); } },
             async releaseWakeLock() { if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; } },
             togglePause() { this.isPaused = !this.isPaused; if (this.isPaused) { if ('speechSynthesis' in window) window.speechSynthesis.pause(); this.releaseWakeLock(); } else { if ('speechSynthesis' in window) window.speechSynthesis.resume(); this.requestWakeLock(); } },
@@ -129,7 +128,7 @@
                 this.startPreparation(exercise);
             },
             startPreparation(data) { this.runPause(data.countdown_before || 0, () => this.startMainTimer(data), "Préparation"); },
-            startMainTimer(data) { this.beep(1200, 150); this.vibrate(100); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); else this.startFullTimeTimer(data); },
+            startMainTimer(data) { this.beep(1200, 150); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); else this.startFullTimeTimer(data); },
             startFullTimeTimer(data) {
                 this.phaseLabel = 'Action !'; this.timerClass = 'timer-action';
                 const initialTotalSeconds = data.temps.secondes || 0; let totalSeconds = initialTotalSeconds; let halfTimeAnnounced = false;
@@ -183,7 +182,7 @@
                     }, 1000);
                 } else { onComplete(); }
             },
-            finishWorkout() { if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done'; this.vibrate([200, 100, 200]); this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.isSerieMode = false; this.releaseWakeLock(); }
+            finishWorkout() { if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done'; this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.isSerieMode = false; this.releaseWakeLock(); }
         },
         unmounted() { this.releaseWakeLock(); if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); }
     }).mount('#app');
