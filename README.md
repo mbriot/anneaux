@@ -4,6 +4,10 @@
 
 - firebase deploy
 
+# Lancement en local
+
+- firebase emulators:start
+
 # Documentation des Séances
 
 Pour ajouter une nouvelle séance d'entraînement, vous devez modifier le fichier `public/index.html` et ajouter un nouvel objet à la variable `workouts` dans la section `<script>`.

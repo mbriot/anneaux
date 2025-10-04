@@ -1,0 +1,84 @@
+{
+    "name": "Séance Classique",
+    "plan": [
+        { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 5 }, "pause_after": 0, "countdown_before": 0 },
+        { 
+            "nom": "Maintien a l'appui", 
+            "type": "EMOM", 
+            "temps": { "every": 15, "during": 15 }, "repeat": { "number": 3, "pause_between": 15 }, 
+            "pause_after": 30, 
+            "countdown_before": 0 
+        },
+        { 
+            "nom": "Dips", 
+            "type": "serie", 
+            "rest": 180,
+            "number": 3,
+            "pause_after": 180, 
+            "countdown_before": 10 
+        },
+        { 
+            "nom": "Pompes", 
+            "type": "serie", 
+            "rest": 60,
+            "number": 3,
+            "pause_after": 60, 
+            "countdown_before": 10
+        },
+        { 
+            "nom": "Butterfly", 
+            "type": "serie", 
+            "rest": 60,
+            "number": 3,
+            "pause_after": 60, 
+            "countdown_before": 10
+        },
+        { 
+            "nom": "Chandelle", 
+            "type": "EMOM", 
+            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 3, "pause_between": 30 }, 
+            "pause_after": 60, 
+            "countdown_before": 0 
+        },
+        { 
+            "nom": "Tractions", 
+            "type": "serie", 
+            "rest": 180,
+            "number": 3,
+            "pause_after": 180, 
+            "countdown_before": 10 
+        },
+        { 
+            "nom": "Rowing", 
+            "type": "serie", 
+            "rest": 60,
+            "number": 3,
+            "pause_after": 60, 
+            "countdown_before": 10
+        },
+        { 
+            "nom": "Butterfly Inversé", 
+            "type": "serie", 
+            "rest": 60,
+            "number": 3,
+            "pause_after": 60, 
+            "countdown_before": 10
+        },
+        { 
+            "nom": "Abdo Superman", 
+            "type": "serie", 
+            "rest": 30,
+            "number": 3,
+            "pause_after": 30, 
+            "countdown_before": 10
+        },
+        { 
+            "nom": "Abdo Remonté Genoux", 
+            "type": "serie", 
+            "rest": 30,
+            "number": 3,
+            "pause_after": 30, 
+            "countdown_before": 10
+        }
+    ]
+}

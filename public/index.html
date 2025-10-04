@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Anneaux !</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script>window.workouts = {};</script>
-    <script src="workouts/seanceClassique.js"></script>
-    <script src="workouts/falseGripRapid.js"></script>
-    <script src="workouts/seanceEmom.js"></script>
     <style>
         :root { --prep-color: #ff9800; --action-color: #007bff; --pause-color: #17a2b8; --done-color: #28a745; }
         html, body { height: 100%; width: 100%; overflow: hidden; }
@@ -60,7 +56,7 @@
     createApp({
         data() {
             return {
-                predefinedWorkouts: window.workouts,
+                predefinedWorkouts: {},
                 selectedWorkoutPlan: null,
                 workoutPlan: [],
                 currentExerciseIndex: -1, currentRepetition: 0, isPaused: false, isSerieMode: false,
@@ -68,6 +64,19 @@
                 exerciseName: '', timerDisplay: '', phaseLabel: '', timerClass: '',
                 countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null
             };
+        },
+        async created() {
+            const manifestResponse = await fetch('workouts/manifest.json');
+            const manifest = await manifestResponse.json();
+
+            const workouts = {};
+            for (const fileName of manifest) {
+                const workoutName = fileName.replace('.json', '');
+                const workoutResponse = await fetch(`workouts/${fileName}`);
+                const workoutData = await workoutResponse.json();
+                workouts[workoutName] = workoutData;
+            }
+            this.predefinedWorkouts = workouts;
         },
         computed: {
             formattedTotalTime() { if (this.totalWorkoutTime <= 0) return '00:00'; const m = Math.floor(this.totalWorkoutTime / 60); const s = this.totalWorkoutTime % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; },
