@@ -91,23 +91,8 @@
                 const plan = this.selectedWorkoutPlan;
                 this.workoutPlan = plan; this.currentExerciseIndex = -1; this.isWorkoutStarted = true; this.isPaused = false; this.isSerieMode = false;
                 
-                let total = 0;
-                plan.forEach((ex, index) => {
-                    const repeats = ex.repeat ? ex.repeat.number : (ex.type === 'serie' ? ex.number : 1);
-                    total += (ex.countdown_before || 0);
-                    if (ex.type === 'EMOM') total += (ex.temps.during || 0) * repeats;
-                    else if (ex.type === 'full_time') total += (ex.temps.secondes || 0) * repeats;
-                    if (ex.type === 'serie') total += (ex.rest || 0) * (repeats - 1);
-
-                    if (ex.type === 'EMOM' && ex.repeat) {
-                        total += (ex.repeat.pause_between || 0) * (repeats);
-                    } else {
-                        if (ex.repeat) total += (ex.repeat.pause_between || 0) * (repeats - 1);
-                        if (index < plan.length - 1) total += ex.pause_after || 0;
-                    }
-                });
-                this.totalWorkoutTime = total;
-                this.totalTimeInterval = setInterval(() => { if (!this.isPaused && this.totalWorkoutTime > 0) this.totalWorkoutTime--; }, 1000);
+                this.totalWorkoutTime = 0;
+                this.totalTimeInterval = setInterval(() => { if (!this.isPaused) this.totalWorkoutTime++; }, 1000);
                 this.requestWakeLock();
                 this.startNextExercise();
             },
@@ -182,7 +167,7 @@
                     }, 1000);
                 } else { onComplete(); }
             },
-            finishWorkout() { if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); this.totalWorkoutTime = 0; this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done'; this.vibrate([200, 100, 200]); this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.isSerieMode = false; this.releaseWakeLock(); }
+            finishWorkout() { if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done'; this.vibrate([200, 100, 200]); this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.isSerieMode = false; this.releaseWakeLock(); }
         },
         unmounted() { this.releaseWakeLock(); if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); }
     }).mount('#app');
