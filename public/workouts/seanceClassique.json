@@ -1,7 +1,7 @@
 {
     "name": "Séance Classique",
     "plan": [
-        { "nom": "Échauffement", "type": "full_time", "temps": { "secondes": 5 }, "pause_after": 0, "countdown_before": 0 },
+        { "nom": "Échauffement", "type": "serie", "number": 1, "rest":0, "pause_after": 0, "countdown_before": 0 },
         { 
             "nom": "Maintien a l'appui", 
             "type": "EMOM", 

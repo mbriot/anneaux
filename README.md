@@ -8,23 +8,28 @@
 
 - firebase emulators:start
 
-# Documentation des Séances
+# Gérer les Séances
 
-Pour ajouter une nouvelle séance d'entraînement, vous devez modifier le fichier `public/index.html` et ajouter un nouvel objet à la variable `workouts` dans la section `<script>`.
+Pour ajouter ou modifier une séance, vous devez travailler avec les fichiers situés dans le dossier `public/workouts`.
 
-Chaque séance est un objet avec une clé unique (par exemple, `maNouvelleSeance`) et une valeur contenant les propriétés `name` et `plan`.
+## Ajouter une séance
 
-```javascript
-const workouts = {
-    // ... autres séances
-    maNouvelleSeance: {
-        name: "Nom de ma nouvelle séance",
-        plan: [
-            // ... liste des exercices
-        ]
-    }
-};
-```
+1.  **Créez un nouveau fichier JSON** dans le dossier `public/workouts` (par exemple, `maNouvelleSeance.json`).
+2.  **Structurez ce fichier** en vous basant sur le modèle des autres séances. Il doit contenir un objet principal avec une clé `name` (le nom de la séance) et une clé `plan` (un tableau listant les exercices).
+3.  **Référencez votre nouveau fichier** en ajoutant son nom dans le fichier `public/workouts/manifest.json`.
+
+    ```json
+    [
+        "falseGripRapid.json",
+        "seanceClassique.json",
+        "seanceEmom.json",
+        "maNouvelleSeance.json"
+    ]
+    ```
+
+## Modifier une séance
+
+Pour modifier une séance existante, il suffit d'éditer directement le fichier JSON correspondant dans le dossier `public/workouts`. Les changements seront automatiquement pris en compte au prochain chargement de l'application.
 
 ## Structure d'un exercice
 
