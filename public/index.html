@@ -9,18 +9,32 @@
         :root { --prep-color: #ff9800; --action-color: #007bff; --pause-color: #17a2b8; --done-color: #28a745; }
         html, body { height: 100%; width: 100%; overflow: hidden; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; margin: 0; background-color: #f0f2f5; }
-        #app { text-align: center; background: white; padding: 2rem 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        #app { text-align: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
         select { width: 95%; padding: 0.8rem; margin-bottom: 1.5rem; border-radius: 4px; border: 1px solid #ccc; font-size: 1.2rem; background-color: white; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto; }
         button { padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; border: none; background-color: var(--action-color); color: white; border-radius: 8px; width: 90%; }
         button:disabled { background-color: #a0a0a0; cursor: not-allowed; }
-        h1 { margin-top: 0; margin-bottom: 0.5rem; font-size: 2.5rem; font-weight: bold; color: #333; white-space: normal; overflow-wrap: break-word; }
-        #timerDisplay { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; transition: color 0.5s; white-space: nowrap; }
-        .phase-label { font-size: 1.5rem; color: #6c757d; margin-bottom: 1rem; }
-        .pause-btn { position: absolute; top: 20px; left: 20px; width: 50px; height: 50px; padding: 0; font-size: 1.5rem; border-radius: 50%; z-index: 10; background-color: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); color: #333; }
-        .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: #6c757d; background: #f0f2f5; padding: 5px 10px; border-radius: 8px; }
-        .ok-btn { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); width: 70%; max-width: 300px; padding: 20px; font-size: 1.8rem; border-radius: 10px; background-color: var(--done-color); }
+        
+        .workout-view { display: flex; flex-direction: column; height: 100%; }
+        .main-display { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        #plan-container { flex-shrink: 0; padding: 10px; border-top: 1px solid #eee; max-height: 35%; overflow-y: auto; }
+        #plan-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+        #plan-list li { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
+        #plan-list li .exercise-main { display: flex; align-items: center; }
+        #plan-list li.completed { color: #999; }
+        #plan-list li.completed .exercise-main { text-decoration: line-through; }
+        #plan-list li input[type=checkbox] { margin-right: 10px; }
+        .sub-tasks { padding-left: 25px; margin-top: 5px; display: flex; align-items: center; flex-wrap: wrap; }
+        .sub-tasks label { font-size: 0.8rem; margin-right: 5px; font-style: italic; }
+        .sub-tasks input[type=checkbox] { width: 12px; height: 12px; }
+
+        h1 { margin-top: 0; margin-bottom: 0.5rem; font-size: 2rem; font-weight: bold; color: #333; white-space: normal; overflow-wrap: break-word; }
+        #timerDisplay { font-size: clamp(3rem, 16vw, 5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; transition: color 0.5s; white-space: nowrap; }
+        .phase-label { font-size: 1.3rem; color: #6c757d; margin-bottom: 1rem; }
+        .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); color: #333; }
+        .total-time-display { position: absolute; top: 15px; right: 15px; font-size: 1.3rem; color: #6c757d; background: #f0f2f5; padding: 5px 10px; border-radius: 8px; }
+        .ok-btn { position: absolute; bottom: 40%; left: 50%; transform: translateX(-50%); width: 70%; max-width: 300px; padding: 20px; font-size: 1.8rem; border-radius: 10px; background-color: var(--done-color); }
         .next-btn { width: auto; padding: 10px 20px; font-size: 1rem; background-color: #6c757d; margin-top: 1rem; }
-        .next-exercise-label { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; font-size: 1.1rem; color: #6c757d; font-style: italic; }
+        .next-exercise-label { font-size: 1rem; color: #6c757d; font-style: italic; margin-top: 10px; }
         .timer-prep { color: var(--prep-color); }
         .timer-action { color: var(--action-color); }
         .timer-pause { color: var(--pause-color); }
@@ -40,15 +54,41 @@
         <br>
         <button @click="startWorkout" :disabled="!selectedWorkoutPlan">Commencer la séance</button>
     </div>
-    <div v-if="isWorkoutStarted">
+    <div v-if="isWorkoutStarted" class="workout-view">
         <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
         <div class="total-time-display">{{ formattedTotalTime }}</div>
-        <h1>{{ exerciseName }}</h1>
-        <p class="phase-label">{{ phaseLabel }}</p>
-        <div id="timerDisplay" :class="timerClass">{{ timerDisplay }}</div>
-        <button @click="skipToNextExercise" class="next-btn" v-if="!isSerieMode && currentExerciseIndex < workoutPlan.length">Suivant</button>
+        
+        <div class="main-display">
+            <h1>{{ exerciseName }}</h1>
+            <p class="phase-label">{{ phaseLabel }}</p>
+            <div id="timerDisplay" :class="timerClass">{{ timerDisplay }}</div>
+            <button @click="skipToNextExercise" class="next-btn" v-if="!isSerieMode && currentExerciseIndex < workoutPlan.length">Suivant</button>
+            <p v-if="nextExerciseName" class="next-exercise-label">{{ nextExerciseName }}</p>
+        </div>
+        
         <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
-        <p v-if="nextExerciseName" class="next-exercise-label">{{ nextExerciseName }}</p>
+
+        <div id="plan-container">
+            <ul id="plan-list">
+                <li v-for="(exercise, index) in workoutPlan" :key="index" :class="{ completed: index < currentExerciseIndex }">
+                    <div class="exercise-main">
+                        <input type="checkbox" :checked="index < currentExerciseIndex" disabled>
+                        <span>{{ exercise.nom }}</span>
+                    </div>
+                    <div class="sub-tasks" v-if="exercise.type === 'serie' && exercise.number > 1">
+                        <input type="checkbox" v-for="n in exercise.number" :key="'s'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
+                    </div>
+                    <div class="sub-tasks" v-if="exercise.type === 'EMOM' && exercise.temps && exercise.temps.during >= exercise.temps.every">
+                        <label>Tours:</label>
+                        <input type="checkbox" v-for="n in Math.floor(exercise.temps.during / exercise.temps.every)" :key="'e'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentEmomRound)" disabled>
+                    </div>
+                    <div class="sub-tasks" v-if="exercise.repeat && exercise.repeat.number > 1">
+                        <label>Reps:</label>
+                        <input type="checkbox" v-for="n in exercise.repeat.number" :key="'er'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 <script>
@@ -59,7 +99,7 @@
                 predefinedWorkouts: {},
                 selectedWorkoutPlan: null,
                 workoutPlan: [],
-                currentExerciseIndex: -1, currentRepetition: 0, isPaused: false, isSerieMode: false,
+                currentExerciseIndex: -1, currentRepetition: 0, currentEmomRound: 0, isPaused: false, isSerieMode: false,
                 totalWorkoutTime: 0, totalTimeInterval: null,
                 exerciseName: '', timerDisplay: '', phaseLabel: '', timerClass: '',
                 countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null
@@ -84,7 +124,6 @@
         },
         methods: {
             skipToNextExercise() { if (this.countdownInterval) { clearInterval(this.countdownInterval); } this.startNextExercise(); },
-            // ... (toutes les méthodes utilitaires et de logique de séance restent ici, inchangées)
             speak(text, lang = 'en-US') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.9; window.speechSynthesis.speak(u); } },
             beep(freq = 880, duration = 100) { if (!this.audioContext) return; const o = this.audioContext.createOscillator(); const g = this.audioContext.createGain(); o.connect(g); o.frequency.value = freq; o.type = 'sine'; g.connect(this.audioContext.destination); g.gain.setValueAtTime(1, this.audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration / 1000); o.start(); o.stop(this.audioContext.currentTime + duration / 1000); },
             async requestWakeLock() { if ('wakeLock' in navigator && !this.isPaused) try { this.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { console.error(e); } },
@@ -106,15 +145,28 @@
             },
             decideNextStep() {
                 const exercise = this.workoutPlan[this.currentExerciseIndex];
+                // Is it a serie with more sets?
                 if (exercise.type === 'serie' && this.currentRepetition < exercise.number) {
                     this.currentRepetition++;
                     this.runPause(exercise.rest || 0, () => this.startSerieMode(exercise), `Repos série`);
-                } else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
+                }
+                // Is it a repeating block with more reps?
+                else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
                     this.currentRepetition++;
                     this.runPause(exercise.repeat.pause_between || 0, () => this.startMainTimer(exercise), "Reprise");
-                } else if (exercise.type === 'EMOM' && exercise.repeat && this.currentRepetition === exercise.repeat.number) {
-                    this.runPause(exercise.repeat.pause_between || 0, () => this.startNextExercise(), "Pause");
-                } else {
+                }
+                // Otherwise, the exercise is completely finished. Run the final pause.
+                else {
+                    // If the exercise that just finished was a repeating type,
+                    // increment the repetition counter one last time to mark the final sub-task as complete on the UI.
+                    if (exercise.repeat || exercise.type === 'serie') {
+                        this.currentRepetition++;
+                    }
+
+                    const nextIndex = this.currentExerciseIndex + 1;
+                    if (nextIndex < this.workoutPlan.length) {
+                        this.exerciseName = this.workoutPlan[nextIndex].nom.toUpperCase();
+                    }
                     this.runPause(exercise.pause_after || 0, () => this.startNextExercise(), "Pause");
                 }
             },
@@ -123,6 +175,7 @@
                 this.currentExerciseIndex++;
                 if (this.currentExerciseIndex >= this.workoutPlan.length) { this.finishWorkout(); return; }
                 this.currentRepetition = 1;
+                this.currentEmomRound = 0;
                 const exercise = this.workoutPlan[this.currentExerciseIndex];
                 this.exerciseName = exercise.nom.toUpperCase();
                 this.startPreparation(exercise);
@@ -146,6 +199,7 @@
             },
             startEmomTimer(data) {
                 this.timerClass = 'timer-action';
+                this.currentEmomRound = 1;
                 let totalDuration = data.temps.during || 0; const roundDuration = data.temps.every || 60; let currentRoundTime = roundDuration; let halfTimeAnnouncedInRound = false;
                 const updateEmomDisplay = () => {
                     if (data.repeat) {
@@ -162,9 +216,19 @@
                     if (currentRoundTime === 10) this.speak('Ten seconds left', 'en-US');
                     if (currentRoundTime > 0 && currentRoundTime <= 4) this.beep(880, 100);
                     if (!halfTimeAnnouncedInRound && currentRoundTime > 0 && currentRoundTime <= roundDuration / 2) { this.speak('Half time!', 'en-US'); halfTimeAnnouncedInRound = true; }
-                    if (currentRoundTime <= 0) { this.beep(1200, 150); currentRoundTime = roundDuration; halfTimeAnnouncedInRound = false; }
+                    if (currentRoundTime <= 0) { 
+                        this.beep(1200, 150); 
+                        currentRoundTime = roundDuration; 
+                        halfTimeAnnouncedInRound = false; 
+                        if(totalDuration >= 0) this.currentEmomRound++;
+                    }
                     updateEmomDisplay();
-                    if (totalDuration < 0) { clearInterval(this.countdownInterval); this.decideNextStep(); }
+                    if (totalDuration < 0) { 
+                        clearInterval(this.countdownInterval); 
+                        // Ensure all rounds are marked as checked
+                        if (data.temps.during) this.currentEmomRound = (data.temps.during / data.temps.every) + 1;
+                        this.decideNextStep(); 
+                    }
                 }, 1000);
             },
             startSerieMode(data) { this.phaseLabel = `Série ${this.currentRepetition}/${data.number}`; this.timerClass = 'timer-action'; this.timerDisplay = 'GO!'; this.isSerieMode = true; },
@@ -188,7 +252,18 @@
                     }, 1000);
                 } else { onComplete(); }
             },
-            finishWorkout() { if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); this.exerciseName = 'SÉANCE TERMINÉE'; this.phaseLabel = 'Bravo !'; this.timerDisplay = '💪'; this.timerClass = 'timer-done'; this.speak('Workout complete!', 'en-US'); this.isPaused = false; this.isSerieMode = false; this.releaseWakeLock(); }
+            finishWorkout() { 
+                if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); 
+                this.currentExerciseIndex = this.workoutPlan.length; // Mark all as completed
+                this.exerciseName = 'SÉANCE TERMINÉE'; 
+                this.phaseLabel = 'Bravo !'; 
+                this.timerDisplay = '💪'; 
+                this.timerClass = 'timer-done'; 
+                this.speak('Workout complete!', 'en-US'); 
+                this.isPaused = false; 
+                this.isSerieMode = false; 
+                this.releaseWakeLock(); 
+            }
         },
         unmounted() { this.releaseWakeLock(); if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); }
     }).mount('#app');

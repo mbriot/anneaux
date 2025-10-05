@@ -7,7 +7,7 @@
             "type": "EMOM", 
             "temps": { "every": 15, "during": 15 }, "repeat": { "number": 3, "pause_between": 15 }, 
             "pause_after": 30, 
-            "countdown_before": 0 
+            "countdown_before": 10 
         },
         { 
             "nom": "Dips", 
