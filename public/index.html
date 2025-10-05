@@ -16,13 +16,13 @@
         
         .workout-view { display: flex; flex-direction: column; height: 100%; }
         .main-display { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        #plan-container { flex-shrink: 0; padding: 10px; border-top: 1px solid #eee; max-height: 35%; overflow-y: auto; }
-        #plan-list { list-style: none; padding: 0; margin: 0; text-align: left; }
-        #plan-list li { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
-        #plan-list li .exercise-main { display: flex; align-items: center; }
-        #plan-list li.completed { color: #999; }
-        #plan-list li.completed .exercise-main { text-decoration: line-through; }
-        #plan-list li input[type=checkbox] { margin-right: 10px; }
+        #plan-container { flex-shrink: 0; padding: 10px; border-top: 1px solid #eee; max-height: 50%; overflow-y: auto; }
+        .plan-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+        .plan-list li { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
+        .plan-list li .exercise-main { display: flex; align-items: center; }
+        .plan-list li.completed { color: #999; }
+        .plan-list li.completed .exercise-main { text-decoration: line-through; }
+        .plan-list li input[type=checkbox] { margin-right: 10px; }
         .sub-tasks { padding-left: 25px; margin-top: 5px; display: flex; align-items: center; flex-wrap: wrap; }
         .sub-tasks label { font-size: 0.8rem; margin-right: 5px; font-style: italic; }
         .sub-tasks input[type=checkbox] { width: 12px; height: 12px; }
@@ -31,8 +31,20 @@
         #timerDisplay { font-size: clamp(3rem, 16vw, 5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; transition: color 0.5s; white-space: nowrap; }
         .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); color: #333; }
         .total-time-display { position: absolute; top: 15px; right: 15px; font-size: 1.3rem; color: #6c757d; background: #f0f2f5; padding: 5px 10px; border-radius: 8px; }
-        .ok-btn { position: absolute; bottom: 40%; left: 50%; transform: translateX(-50%); width: 70%; max-width: 300px; padding: 20px; font-size: 1.8rem; border-radius: 10px; background-color: var(--done-color); }
-        .next-btn { width: auto; padding: 10px 20px; font-size: 1rem; background-color: #6c757d; margin-top: 1rem; }
+        
+        .next-btn, .ok-btn {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin-top: 1rem;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .next-btn { background-color: #6c757d; }
+        .ok-btn { background-color: var(--done-color); }
+
         .timer-prep { color: var(--prep-color); }
         .timer-action { color: var(--action-color); }
         .timer-pause { color: var(--pause-color); }
@@ -60,32 +72,29 @@
             <h1>{{ exerciseName }}</h1>
             <div id="timerDisplay" :class="timerClass">{{ timerDisplay }}</div>
             <button @click="skipToNextExercise" class="next-btn" v-if="!isSerieMode && currentExerciseIndex < workoutPlan.length">Suivant</button>
+            <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
         </div>
-        
-        <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
 
         <div id="plan-container">
-            <ul id="plan-list">
-                <template v-for="(exercise, index) in workoutPlan" :key="index">
-                    <li v-if="index >= currentExerciseIndex - 1" :class="{ completed: index < currentExerciseIndex }">
-                        <div class="exercise-main">
-                            <input type="checkbox" :checked="index < currentExerciseIndex" disabled>
-                            <span>{{ formatExerciseTitle(exercise) }}</span>
-                        </div>
-                        <div class="sub-tasks" v-if="exercise.type === 'serie' && exercise.number > 1">
-                            <input type="checkbox" v-for="n in exercise.number" :key="'s'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
-                        </div>
-                        <div class="sub-tasks" v-if="exercise.type === 'EMOM' && exercise.temps && exercise.temps.during >= exercise.temps.every">
-                            <label>Tours:</label>
-                            <input type="checkbox" v-for="n in Math.floor(exercise.temps.during / exercise.temps.every)" :key="'e'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentEmomRound)" disabled>
-                        </div>
-                        <div class="sub-tasks" v-if="exercise.repeat && exercise.repeat.number > 1">
-                            <label>Reps:</label>
-                            <input type="checkbox" v-for="n in exercise.repeat.number" :key="'er'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
-                        </div>
-                    </li>
-                </template>
-            </ul>
+            <template v-for="(exercise, index) in workoutPlan" :key="index">
+                <li v-if="index >= currentExerciseIndex - 1" :class="{ completed: index < currentExerciseIndex }">
+                    <div class="exercise-main plan-list">
+                        <input type="checkbox" :checked="index < currentExerciseIndex" disabled>
+                        <span>{{ formatExerciseTitle(exercise) }}</span>
+                    </div>
+                    <div class="sub-tasks" v-if="exercise.type === 'serie' && exercise.number > 1">
+                        <input type="checkbox" v-for="n in exercise.number" :key="'s'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
+                    </div>
+                    <div class="sub-tasks" v-if="exercise.type === 'EMOM' && exercise.temps && exercise.temps.during >= exercise.temps.every">
+                        <label>Tours:</label>
+                        <input type="checkbox" v-for="n in Math.floor(exercise.temps.during / exercise.temps.every)" :key="'e'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentEmomRound)" disabled>
+                    </div>
+                    <div class="sub-tasks" v-if="exercise.repeat && exercise.repeat.number > 1">
+                        <label>Reps:</label>
+                        <input type="checkbox" v-for="n in exercise.repeat.number" :key="'er'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
+                    </div>
+                </li>
+            </template>
         </div>
     </div>
 </div>
