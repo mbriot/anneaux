@@ -5,29 +5,29 @@
         { 
             "nom": "Rowing Bas", 
             "type": "EMOM", 
-            "temps": { "every": 5, "during": 5 }, "repeat": { "number": 2, "pause_between": 5 }, 
+            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
             "pause_after": 5, 
-            "countdown_before": 5 
+            "countdown_before": 10 
         },
         { 
             "nom": "Rowing Haut", 
             "type": "EMOM", 
-            "temps": { "every": 5, "during": 5 }, "repeat": { "number": 2, "pause_between": 5 }, 
+            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
             "pause_after": 5, 
             "countdown_before": 0 
         },
         { 
             "nom": "Rowing Bas", 
             "type": "EMOM", 
-            "temps": { "every": 5, "during": 5 }, "repeat": { "number": 2, "pause_between": 5 }, 
+            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
             "pause_after": 5, 
-            "countdown_before": 5 
+            "countdown_before": 0 
         },
         { 
             "nom": "Rowing Haut", 
             "type": "EMOM", 
-            "temps": { "every": 5, "during": 5 }, "repeat": { "number": 2, "pause_between": 5 }, 
-            "pause_after": 5, 
+            "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
+            "pause_after": 0, 
             "countdown_before": 0 
         }
     ]

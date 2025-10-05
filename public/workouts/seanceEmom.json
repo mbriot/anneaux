@@ -28,7 +28,7 @@
         "type": "EMOM", 
         "temps": { "every": 60, "during": 480 }, 
         "pause_after": 30, 
-        "countdown_before": 0 
+        "countdown_before": 30 
     },
     { 
         "nom": "EMOM Dips", 
@@ -42,7 +42,7 @@
         "type": "EMOM", 
         "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
         "pause_after": 30, 
-        "countdown_before": 10 
+        "countdown_before": 30 
     },
     { 
         "nom": "EMOM Tractions", 

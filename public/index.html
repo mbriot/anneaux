@@ -6,85 +6,78 @@
     <title>Anneaux !</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        :root { --prep-color: #ff9800; --action-color: #007bff; --pause-color: #17a2b8; --done-color: #28a745; }
+        :root {
+            --prep-color: #ff9800;
+            --action-color: #a855f7; /* Purple from screenshot */
+            --pause-color: #17a2b8;
+            --done-color: #28a745;
+            --track-color: #373737;
+            --bg-color: #000;
+            --text-color: #fff;
+            --text-secondary-color: #aaa;
+        }
         html, body { height: 100%; width: 100%; overflow: hidden; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; margin: 0; background-color: #f0f2f5; }
-        #app { text-align: center; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
-        select { width: 95%; padding: 0.8rem; margin-bottom: 1.5rem; border-radius: 4px; border: 1px solid #ccc; font-size: 1.2rem; background-color: white; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; margin: 0; background-color: var(--bg-color); color: var(--text-color); }
+        #app { text-align: center; background: var(--bg-color); padding: 1rem; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        select { width: 95%; padding: 0.8rem; margin-bottom: 1.5rem; border-radius: 4px; border: 1px solid #ccc; font-size: 1.2rem; background-color: #333; color: white; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto; }
         button { padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; border: none; background-color: var(--action-color); color: white; border-radius: 8px; width: 90%; }
         button:disabled { background-color: #a0a0a0; cursor: not-allowed; }
         
         .workout-view { display: flex; flex-direction: column; height: 100%; }
-        .main-display { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        #plan-container { flex-shrink: 0; padding: 10px; border-top: 1px solid #eee; max-height: 50%; overflow-y: auto; }
+        .main-display { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #plan-container { flex-shrink: 0; padding: 10px; border-top: 1px solid var(--track-color); max-height: 40%; overflow-y: auto; background-color: #111; }
         .plan-list { list-style: none; padding: 0; margin: 0; text-align: left; }
-        .plan-list li { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
+        .plan-list li { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px solid var(--track-color); font-size: 1rem; }
         .plan-list li .exercise-main { display: flex; align-items: center; }
-        .plan-list li.completed { color: #999; }
+        .plan-list li.completed { color: #666; }
         .plan-list li.completed .exercise-main { text-decoration: line-through; }
+        
         .plan-list li input[type=checkbox] {
-            -webkit-appearance: none;
-            appearance: none;
-            background-color: #f0f2f5;
-            margin-right: 10px;
-            position: relative;
-            cursor: pointer;
-            border-radius: 3px;
-            border: 1px solid #ccc;
+            -webkit-appearance: none; appearance: none; background-color: red; margin-right: 10px; position: relative; cursor: pointer; border-radius: 3px; border: 1px solid #ccc;
         }
-        .exercise-main input[type=checkbox] {
-            width: 1.2em;
-            height: 1.2em;
-        }
-        .sub-tasks input[type=checkbox] {
-            width: 0.9em;
-            height: 0.9em;
-        }
+        .exercise-main input[type=checkbox] { width: 1.2em; height: 1.2em; }
+        .sub-tasks input[type=checkbox] { width: 0.9em; height: 0.9em; }
         .plan-list li input[type=checkbox]::after {
-            content: '';
-            position: absolute;
-            left: 40%;
-            top: 20%;
-            width: 25%;
-            height: 50%;
-            border: solid white;
-            border-width: 0 0.2em 0.2em 0;
-            transform: rotate(45deg) scale(0);
-            transition: 120ms all ease-in-out;
+            content: ''; position: absolute; left: 40%; top: 20%; width: 25%; height: 50%; border: solid #007bff; border-width: 0 0.2em 0.2em 0; transform: rotate(45deg) scale(0); transition: 120ms all ease-in-out;
         }
         .plan-list li input[type=checkbox]:checked {
-            background-color: var(--done-color);
-            border-color: var(--done-color);
+            background-color: #fff;
+            border-color: #007bff;
         }
-        .plan-list li input[type=checkbox]:checked::after {
-            transform: rotate(45deg) scale(1);
-        }
+        .plan-list li input[type=checkbox]:checked::after { transform: rotate(45deg) scale(1); }
 
         .sub-tasks { padding-left: 25px; margin-top: 5px; display: flex; align-items: center; flex-wrap: wrap; }
         .sub-tasks label { font-size: 0.8rem; margin-right: 5px; font-style: italic; }
 
-        h1 { margin-top: 0; margin-bottom: 0.5rem; font-size: 2rem; font-weight: bold; color: #333; white-space: normal; overflow-wrap: break-word; }
-        #timerDisplay { font-size: clamp(3rem, 16vw, 5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; transition: color 0.5s; white-space: nowrap; }
-        .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); color: #333; }
-        .total-time-display { position: absolute; top: 15px; right: 15px; font-size: 1.3rem; color: #6c757d; background: #f0f2f5; padding: 5px 10px; border-radius: 8px; }
+        h1 {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-color);
+            white-space: normal;
+            overflow-wrap: break-word;
+            padding: 0 1rem;
+        }
+        
+        .circle-timer { width: 80vw; max-width: 400px; position: relative; aspect-ratio: 1 / 1; }
+        .circle-timer svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        .timer-track, .timer-progress { fill: none; stroke-width: 10; }
+        .timer-track { stroke: var(--track-color); stroke-dasharray: 5 5; }
+        .timer-progress { stroke: var(--action-color); stroke-linecap: round; transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease; }
+
+        .timer-text-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .timer-text { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; color: var(--action-color); }
+        .timer-subtext { font-size: 1.1rem; color: var(--text-secondary-color); margin-top: 10px; }
+
+        .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+        .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.3rem; color: var(--text-secondary-color); }
         
         .next-btn, .ok-btn {
-            width: auto;
-            padding: 10px 20px;
-            font-size: 1rem;
-            margin-top: 1rem;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+            width: auto; padding: 10px 20px; font-size: 1rem; margin-top: 0px; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;
         }
         .next-btn { background-color: #6c757d; }
         .ok-btn { background-color: var(--done-color); }
-
-        .timer-prep { color: var(--prep-color); }
-        .timer-action { color: var(--action-color); }
-        .timer-pause { color: var(--pause-color); }
-        .timer-done { color: var(--done-color); }
     </style>
 </head>
 <body>
@@ -93,9 +86,7 @@
         <h2>Choisissez votre séance</h2>
         <select v-model="selectedWorkoutPlan">
             <option :value="null" disabled>-- Sélectionnez un programme --</option>
-            <option v-for="(workout, index) in predefinedWorkouts" :key="index" :value="workout.plan">
-                {{ workout.name }}
-            </option>
+            <option v-for="(workout, key) in predefinedWorkouts" :key="key" :value="workout.plan">{{ workout.name }}</option>
         </select>
         <br>
         <button @click="startWorkout" :disabled="!selectedWorkoutPlan">Commencer la séance</button>
@@ -105,8 +96,17 @@
         <div class="total-time-display">{{ formattedTotalTime }}</div>
         
         <div class="main-display">
+            <div class="circle-timer">
+                <svg viewBox="0 0 100 100">
+                    <circle class="timer-track" cx="50" cy="50" r="45"></circle>
+                    <circle class="timer-progress" cx="50" cy="50" r="45" :style="progressStyle"></circle>
+                </svg>
+                <div class="timer-text-container">
+                    <div class="timer-text">{{ timerDisplay }}</div>
+                    <div class="timer-subtext">{{ timerSubtext }}</div>
+                </div>
+            </div>
             <h1>{{ exerciseName }}</h1>
-            <div id="timerDisplay" :class="timerClass">{{ timerDisplay }}</div>
             <button @click="skipToNextExercise" class="next-btn" v-if="!isSerieMode && currentExerciseIndex < workoutPlan.length">Suivant</button>
             <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
         </div>
@@ -144,14 +144,14 @@
                 workoutPlan: [],
                 currentExerciseIndex: -1, currentRepetition: 0, currentEmomRound: 0, isPaused: false, isSerieMode: false,
                 totalWorkoutTime: 0, totalTimeInterval: null,
-                exerciseName: '', timerDisplay: '', timerClass: '',
-                countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null
+                exerciseName: '', timerDisplay: '', timerSubtext: '',
+                countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null,
+                progressStyle: {}, circleCircumference: 0
             };
         },
         async created() {
             const manifestResponse = await fetch('workouts/manifest.json');
             const manifest = await manifestResponse.json();
-
             const workouts = {};
             for (const fileName of manifest) {
                 const workoutName = fileName.replace('.json', '');
@@ -160,32 +160,34 @@
                 workouts[workoutName] = workoutData;
             }
             this.predefinedWorkouts = workouts;
+            this.circleCircumference = 2 * Math.PI * 45; // 45 is the radius 'r' of the circle in SVG
+            this.setCircleProgress(0, 'action');
         },
         computed: {
             formattedTotalTime() { if (this.totalWorkoutTime <= 0) return '00:00'; const m = Math.floor(this.totalWorkoutTime / 60); const s = this.totalWorkoutTime % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; },
         },
         methods: {
+            setCircleProgress(percent, phase) {
+                const offset = this.circleCircumference - (percent / 100) * this.circleCircumference;
+                let color = 'var(--action-color)';
+                if (phase === 'prep') color = 'var(--prep-color)';
+                else if (phase === 'pause') color = 'var(--pause-color)';
+                this.progressStyle = {
+                    strokeDasharray: `${this.circleCircumference}`,
+                    strokeDashoffset: offset,
+                    stroke: color
+                };
+            },
             formatExerciseTitle(exercise) {
                 let parts = [exercise.nom];
-                if (exercise.type) {
-                    parts.push(exercise.type.toUpperCase());
-                }
-
+                if (exercise.type) { parts.push(exercise.type.toUpperCase()); }
                 let repCount = 0;
-                if (exercise.type === 'serie' && exercise.number) {
-                    repCount = exercise.number;
-                } else if (exercise.type === 'EMOM') {
-                    if (exercise.repeat && exercise.repeat.number) {
-                        repCount = exercise.repeat.number;
-                    } else if (exercise.temps && exercise.temps.during && exercise.temps.every) {
-                        repCount = Math.floor(exercise.temps.during / exercise.temps.every);
-                    }
+                if (exercise.type === 'serie' && exercise.number) { repCount = exercise.number; }
+                else if (exercise.type === 'EMOM') {
+                    if (exercise.repeat && exercise.repeat.number) { repCount = exercise.repeat.number; }
+                    else if (exercise.temps && exercise.temps.during && exercise.temps.every) { repCount = Math.floor(exercise.temps.during / exercise.temps.every); }
                 }
-
-                if (repCount > 1) {
-                    parts.push(repCount);
-                }
-
+                if (repCount > 1) { parts.push(repCount); }
                 return parts.join(' - ');
             },
             skipToNextExercise() { if (this.countdownInterval) { clearInterval(this.countdownInterval); } this.startNextExercise(); },
@@ -199,10 +201,8 @@
                 if (!this.audioContext) this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 if (this.countdownInterval) clearInterval(this.countdownInterval);
                 if (this.totalTimeInterval) clearInterval(this.totalTimeInterval);
-                
                 const plan = this.selectedWorkoutPlan;
                 this.workoutPlan = plan; this.currentExerciseIndex = -1; this.isWorkoutStarted = true; this.isPaused = false; this.isSerieMode = false;
-                
                 this.totalWorkoutTime = 0;
                 this.totalTimeInterval = setInterval(() => { if (!this.isPaused) this.totalWorkoutTime++; }, 1000);
                 this.requestWakeLock();
@@ -210,28 +210,16 @@
             },
             decideNextStep() {
                 const exercise = this.workoutPlan[this.currentExerciseIndex];
-                // Is it a serie with more sets?
                 if (exercise.type === 'serie' && this.currentRepetition < exercise.number) {
                     this.currentRepetition++;
                     this.runPause(exercise.rest || 0, () => this.startSerieMode(exercise));
-                }
-                // Is it a repeating block with more reps?
-                else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
+                } else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
                     this.currentRepetition++;
                     this.runPause(exercise.repeat.pause_between || 0, () => this.startMainTimer(exercise));
-                }
-                // Otherwise, the exercise is completely finished. Run the final pause.
-                else {
-                    // If the exercise that just finished was a repeating type,
-                    // increment the repetition counter one last time to mark the final sub-task as complete on the UI.
-                    if (exercise.repeat || exercise.type === 'serie') {
-                        this.currentRepetition++;
-                    }
-
+                } else {
+                    if (exercise.repeat || exercise.type === 'serie') { this.currentRepetition++; }
                     const nextIndex = this.currentExerciseIndex + 1;
-                    if (nextIndex < this.workoutPlan.length) {
-                        this.exerciseName = this.workoutPlan[nextIndex].nom.toUpperCase();
-                    }
+                    if (nextIndex < this.workoutPlan.length) { this.exerciseName = this.workoutPlan[nextIndex].nom.toUpperCase(); }
                     this.runPause(exercise.pause_after || 0, () => this.startNextExercise());
                 }
             },
@@ -245,44 +233,59 @@
                 this.exerciseName = exercise.nom.toUpperCase();
                 this.startPreparation(exercise);
             },
-            startPreparation(data) { this.runPause(data.countdown_before || 0, () => this.startMainTimer(data)); },
+            startPreparation(data) { this.runPause(data.countdown_before || 0, () => this.startMainTimer(data), 'prep'); },
             startMainTimer(data) { this.beep(1200, 150); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); else this.startFullTimeTimer(data); },
             startFullTimeTimer(data) {
-                this.timerClass = 'timer-action';
-                const initialTotalSeconds = data.temps.secondes || 0; let totalSeconds = initialTotalSeconds; let halfTimeAnnounced = false;
-                const updateDisplay = () => { if (totalSeconds < 0) return; this.timerDisplay = `${String(Math.floor(totalSeconds / 60)).padStart(2, '0')}:${String(totalSeconds % 60).padStart(2, '0')}`; };
-                updateDisplay();
+                this.timerSubtext = 'Action !';
+                const duration = data.temps.secondes || 0; let remaining = duration;
+                let halfTimeAnnounced = false;
+                const update = () => {
+                    if (remaining < 0) return;
+                    this.timerDisplay = `${String(Math.floor(remaining / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`;
+                    const percent = duration > 0 ? ((duration - remaining) / duration) * 100 : 0;
+                    this.setCircleProgress(percent, 'action');
+                };
+                update();
                 this.countdownInterval = setInterval(() => {
                     if (this.isPaused) return;
-                    totalSeconds--;
-                    if (totalSeconds === 10) this.speak('Ten seconds left', 'en-US');
-                    if (totalSeconds > 0 && totalSeconds <= 4) this.beep(880, 100);
-                    if (!halfTimeAnnounced && totalSeconds > 0 && totalSeconds <= initialTotalSeconds / 2) { this.speak('Half time!', 'en-US'); halfTimeAnnounced = true; }
-                    updateDisplay();
-                    if (totalSeconds < 0) { clearInterval(this.countdownInterval); this.decideNextStep(); }
+                    remaining--;
+                    if (remaining === 10 && duration >= 30) this.speak('Ten seconds left', 'en-US');
+                    if (remaining > 0 && remaining <= 4) this.beep(880, 100);
+                    if (!halfTimeAnnounced && remaining > 0 && remaining <= duration / 2) {
+                        this.speak('Half time!', 'en-US');
+                        halfTimeAnnounced = true;
+                    }
+                    update();
+                    if (remaining < 0) { clearInterval(this.countdownInterval); this.decideNextStep(); }
                 }, 1000);
             },
             startEmomTimer(data) {
-                this.timerClass = 'timer-action';
                 this.currentEmomRound = 1;
-                let totalDuration = data.temps.during || 0; const roundDuration = data.temps.every || 60; let currentRoundTime = roundDuration; let halfTimeAnnouncedInRound = false;
-                const updateEmomDisplay = () => {
+                let totalDuration = data.temps.during || 0; const roundDuration = data.temps.every || 60; let currentRoundTime = roundDuration;
+                let halfTimeAnnouncedInRound = false;
+                const update = () => {
                     this.timerDisplay = `${String(Math.floor(currentRoundTime/60)).padStart(2,'0')}:${String(currentRoundTime%60).padStart(2,'0')}`;
+                    const percent = roundDuration > 0 ? ((roundDuration - currentRoundTime) / roundDuration) * 100 : 0;
+                    this.setCircleProgress(percent, 'action');
+                    if (data.repeat) { this.timerSubtext = `EMOM ${this.currentRepetition}/${data.repeat.number}`; }
+                    else { this.timerSubtext = `EMOM - ${String(Math.floor(totalDuration/60)).padStart(2,'0')}:${String(totalDuration%60).padStart(2,'0')}`; }
                 };
-                updateEmomDisplay();
+                update();
                 this.countdownInterval = setInterval(() => {
                     if (this.isPaused) return;
                     totalDuration--; currentRoundTime--;
-                    if (currentRoundTime === 10) this.speak('Ten seconds left', 'en-US');
+                    if (currentRoundTime === 10 && roundDuration >= 30) this.speak('Ten seconds left', 'en-US');
                     if (currentRoundTime > 0 && currentRoundTime <= 4) this.beep(880, 100);
-                    if (!halfTimeAnnouncedInRound && currentRoundTime > 0 && currentRoundTime <= roundDuration / 2) { this.speak('Half time!', 'en-US'); halfTimeAnnouncedInRound = true; }
+                    if (!halfTimeAnnouncedInRound && currentRoundTime > 0 && currentRoundTime <= roundDuration / 2) {
+                        this.speak('Half time!', 'en-US');
+                        halfTimeAnnouncedInRound = true;
+                    }
                     if (currentRoundTime <= 0) { 
-                        this.beep(1200, 150); 
-                        currentRoundTime = roundDuration; 
-                        halfTimeAnnouncedInRound = false; 
+                        this.beep(1200, 150); currentRoundTime = roundDuration; 
+                        halfTimeAnnouncedInRound = false;
                         if(totalDuration >= 0) this.currentEmomRound++;
                     }
-                    updateEmomDisplay();
+                    update();
                     if (totalDuration < 0) { 
                         clearInterval(this.countdownInterval); 
                         if (data.temps.during) this.currentEmomRound = (data.temps.during / data.temps.every) + 1;
@@ -290,35 +293,41 @@
                     }
                 }, 1000);
             },
-            startSerieMode(data) {
-                this.timerClass = 'timer-action'; this.timerDisplay = 'GO!'; this.isSerieMode = true; },
+            startSerieMode(data) { this.timerSubtext = `Série ${this.currentRepetition}/${data.number}`; this.timerDisplay = 'GO!'; this.isSerieMode = true; this.setCircleProgress(100, 'action'); },
             finishSerieSet() { this.isSerieMode = false; this.decideNextStep(); },
-            runPause(duration, onComplete) {
+            runPause(duration, onComplete, phase = 'pause') {
                 this.beep(1400, 200);
                 if (duration > 0) {
-                    this.timerClass = 'timer-pause'; let remaining = duration;
+                    this.timerSubtext = (phase === 'prep') ? 'Préparation' : 'Pause';
+                    let remaining = duration;
                     let halfTimeAnnounced = false;
-                    this.timerDisplay = remaining;
+                    const update = () => {
+                        this.timerDisplay = remaining;
+                        const percent = duration > 0 ? ((duration - remaining) / duration) * 100 : 0;
+                        this.setCircleProgress(percent, phase);
+                    };
+                    update();
                     this.countdownInterval = setInterval(() => {
                         if (this.isPaused) return;
-                        remaining--; this.timerDisplay = remaining;
-                        if (remaining === 10) this.speak('Ten seconds left', 'en-US');
+                        remaining--;
+                        if (remaining === 10 && duration >= 30) this.speak('Ten seconds left', 'en-US');
                         if (!halfTimeAnnounced && remaining > 0 && remaining <= duration / 2) {
                             this.speak('Half time!', 'en-US');
                             halfTimeAnnounced = true;
                         }
                         if (remaining > 0 && remaining <= 3) this.beep(880, 100);
-                        if (remaining <= 0) { clearInterval(this.countdownInterval); onComplete(); }
+                        update();
+                        if (remaining < 0) { clearInterval(this.countdownInterval); onComplete(); }
                     }, 1000);
                 } else { onComplete(); }
             },
             finishWorkout() { 
                 if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); 
-                this.currentExerciseIndex = this.workoutPlan.length; // Mark all as completed
+                this.currentExerciseIndex = this.workoutPlan.length;
                 this.exerciseName = 'SÉANCE TERMINÉE'; 
-                this.timerDisplay = '💪'; 
-                this.timerClass = 'timer-done'; 
-                this.speak('Workout complete!', 'en-US'); 
+                this.timerDisplay = '💪';
+                this.timerSubtext = 'Bravo !';
+                this.setCircleProgress(100, 'done');
                 this.isPaused = false; 
                 this.isSerieMode = false; 
                 this.releaseWakeLock(); 
