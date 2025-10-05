@@ -66,23 +66,25 @@
 
         <div id="plan-container">
             <ul id="plan-list">
-                <li v-for="(exercise, index) in workoutPlan" :key="index" :class="{ completed: index < currentExerciseIndex }">
-                    <div class="exercise-main">
-                        <input type="checkbox" :checked="index < currentExerciseIndex" disabled>
-                        <span>{{ formatExerciseTitle(exercise) }}</span>
-                    </div>
-                    <div class="sub-tasks" v-if="exercise.type === 'serie' && exercise.number > 1">
-                        <input type="checkbox" v-for="n in exercise.number" :key="'s'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
-                    </div>
-                    <div class="sub-tasks" v-if="exercise.type === 'EMOM' && exercise.temps && exercise.temps.during >= exercise.temps.every">
-                        <label>Tours:</label>
-                        <input type="checkbox" v-for="n in Math.floor(exercise.temps.during / exercise.temps.every)" :key="'e'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentEmomRound)" disabled>
-                    </div>
-                    <div class="sub-tasks" v-if="exercise.repeat && exercise.repeat.number > 1">
-                        <label>Reps:</label>
-                        <input type="checkbox" v-for="n in exercise.repeat.number" :key="'er'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
-                    </div>
-                </li>
+                <template v-for="(exercise, index) in workoutPlan" :key="index">
+                    <li v-if="index >= currentExerciseIndex - 1" :class="{ completed: index < currentExerciseIndex }">
+                        <div class="exercise-main">
+                            <input type="checkbox" :checked="index < currentExerciseIndex" disabled>
+                            <span>{{ formatExerciseTitle(exercise) }}</span>
+                        </div>
+                        <div class="sub-tasks" v-if="exercise.type === 'serie' && exercise.number > 1">
+                            <input type="checkbox" v-for="n in exercise.number" :key="'s'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
+                        </div>
+                        <div class="sub-tasks" v-if="exercise.type === 'EMOM' && exercise.temps && exercise.temps.during >= exercise.temps.every">
+                            <label>Tours:</label>
+                            <input type="checkbox" v-for="n in Math.floor(exercise.temps.during / exercise.temps.every)" :key="'e'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentEmomRound)" disabled>
+                        </div>
+                        <div class="sub-tasks" v-if="exercise.repeat && exercise.repeat.number > 1">
+                            <label>Reps:</label>
+                            <input type="checkbox" v-for="n in exercise.repeat.number" :key="'er'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
+                        </div>
+                    </li>
+                </template>
             </ul>
         </div>
     </div>
