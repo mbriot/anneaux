@@ -26,25 +26,12 @@
         .workout-view { display: flex; flex-direction: column; height: 100%; }
         .main-display { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         #plan-container { flex-shrink: 0; padding: 10px; border-top: 1px solid var(--track-color); max-height: 40%; overflow-y: auto; background-color: #111; }
-        .plan-list { list-style: none; padding: 0; margin: 0; text-align: left; }
+        .plan-list { list-style: none; padding: 0; margin: 0; text-align: left; font-size: 1.6em}
         .plan-list li { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px solid var(--track-color); font-size: 1rem; }
         .plan-list li .exercise-main { display: flex; align-items: center; }
         .plan-list li.completed { color: #666; }
         .plan-list li.completed .exercise-main { text-decoration: line-through; }
-        
-        .plan-list li input[type=checkbox] {
-            -webkit-appearance: none; appearance: none; background-color: red; margin-right: 10px; position: relative; cursor: pointer; border-radius: 3px; border: 1px solid #ccc;
-        }
-        .exercise-main input[type=checkbox] { width: 1.2em; height: 1.2em; }
-        .sub-tasks input[type=checkbox] { width: 0.9em; height: 0.9em; }
-        .plan-list li input[type=checkbox]::after {
-            content: ''; position: absolute; left: 40%; top: 20%; width: 25%; height: 50%; border: solid #007bff; border-width: 0 0.2em 0.2em 0; transform: rotate(45deg) scale(0); transition: 120ms all ease-in-out;
-        }
-        .plan-list li input[type=checkbox]:checked {
-            background-color: #fff;
-            border-color: #007bff;
-        }
-        .plan-list li input[type=checkbox]:checked::after { transform: rotate(45deg) scale(1); }
+        .plan-list li.current { color: gray; }
 
         .sub-tasks { padding-left: 25px; margin-top: 5px; display: flex; align-items: center; flex-wrap: wrap; }
         .sub-tasks label { font-size: 0.8rem; margin-right: 5px; font-style: italic; }
@@ -68,7 +55,7 @@
 
         .timer-text-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .timer-text { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; color: var(--action-color); }
-        .timer-subtext { font-size: 1.1rem; color: var(--text-secondary-color); margin-top: 10px; }
+        .timer-subtext { font-size: 2.2rem; color: var(--text-secondary-color); margin-top: 10px; }
 
         .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
         .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.3rem; color: var(--text-secondary-color); }
@@ -113,21 +100,9 @@
 
         <div id="plan-container">
             <template v-for="(exercise, index) in workoutPlan" :key="index">
-                <li v-if="index >= currentExerciseIndex - 1" :class="{ completed: index < currentExerciseIndex }">
+                <li v-if="index >= currentExerciseIndex - 1" :class="{ completed: index < currentExerciseIndex, current: index === currentExerciseIndex }">
                     <div class="exercise-main plan-list">
-                        <input type="checkbox" :checked="index < currentExerciseIndex" disabled>
                         <span>{{ formatExerciseTitle(exercise) }}</span>
-                    </div>
-                    <div class="sub-tasks" v-if="exercise.type === 'serie' && exercise.number > 1">
-                        <input type="checkbox" v-for="n in exercise.number" :key="'s'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
-                    </div>
-                    <div class="sub-tasks" v-if="exercise.type === 'EMOM' && exercise.temps && exercise.temps.during >= exercise.temps.every">
-                        <label>Tours:</label>
-                        <input type="checkbox" v-for="n in Math.floor(exercise.temps.during / exercise.temps.every)" :key="'e'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentEmomRound)" disabled>
-                    </div>
-                    <div class="sub-tasks" v-if="exercise.repeat && exercise.repeat.number > 1">
-                        <label>Reps:</label>
-                        <input type="checkbox" v-for="n in exercise.repeat.number" :key="'er'+n" :checked="index < currentExerciseIndex || (index === currentExerciseIndex && n < currentRepetition)" disabled>
                     </div>
                 </li>
             </template>
@@ -179,7 +154,7 @@
                 };
             },
             formatExerciseTitle(exercise) {
-                let parts = [exercise.nom];
+                let parts = [exercise.nom.split(' ').map(word => word.toUpperCase()).join(' ')];
                 if (exercise.type) { parts.push(exercise.type.toUpperCase()); }
                 let repCount = 0;
                 if (exercise.type === 'serie' && exercise.number) { repCount = exercise.number; }
@@ -214,8 +189,14 @@
                     this.currentRepetition++;
                     this.runPause(exercise.rest || 0, () => this.startSerieMode(exercise));
                 } else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
-                    this.currentRepetition++;
-                    this.runPause(exercise.repeat.pause_between || 0, () => this.startMainTimer(exercise));
+                    let subtext = null;
+                    if (exercise.type === 'EMOM' && exercise.repeat) {
+                        subtext = `${this.currentRepetition}/${exercise.repeat.number}`;
+                    }
+                    this.runPause(exercise.repeat.pause_between || 0, () => {
+                        this.currentRepetition++;
+                        this.startMainTimer(exercise);
+                    }, 'pause', subtext);
                 } else {
                     if (exercise.repeat || exercise.type === 'serie') { this.currentRepetition++; }
                     const nextIndex = this.currentExerciseIndex + 1;
@@ -233,7 +214,13 @@
                 this.exerciseName = exercise.nom.toUpperCase();
                 this.startPreparation(exercise);
             },
-            startPreparation(data) { this.runPause(data.countdown_before || 0, () => this.startMainTimer(data), 'prep'); },
+            startPreparation(data) {
+                let subtext = null;
+                if (data.type === 'EMOM' && data.repeat) {
+                    subtext = `${this.currentRepetition}/${data.repeat.number}`;
+                }
+                this.runPause(data.countdown_before || 0, () => this.startMainTimer(data), 'prep', subtext);
+            },
             startMainTimer(data) { this.beep(1200, 150); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); else this.startFullTimeTimer(data); },
             startFullTimeTimer(data) {
                 this.timerSubtext = 'Action !';
@@ -267,8 +254,8 @@
                     this.timerDisplay = `${String(Math.floor(currentRoundTime/60)).padStart(2,'0')}:${String(currentRoundTime%60).padStart(2,'0')}`;
                     const percent = roundDuration > 0 ? ((roundDuration - currentRoundTime) / roundDuration) * 100 : 0;
                     this.setCircleProgress(percent, 'action');
-                    if (data.repeat) { this.timerSubtext = `EMOM ${this.currentRepetition}/${data.repeat.number}`; }
-                    else { this.timerSubtext = `EMOM - ${String(Math.floor(totalDuration/60)).padStart(2,'0')}:${String(totalDuration%60).padStart(2,'0')}`; }
+                    if (data.repeat) { this.timerSubtext = `${this.currentRepetition}/${data.repeat.number}`; }
+                    else { this.timerSubtext = `${this.currentEmomRound}/${Math.floor(data.temps.during / data.temps.every)}`; }
                 };
                 update();
                 this.countdownInterval = setInterval(() => {
@@ -293,12 +280,12 @@
                     }
                 }, 1000);
             },
-            startSerieMode(data) { this.timerSubtext = `Série ${this.currentRepetition}/${data.number}`; this.timerDisplay = 'GO!'; this.isSerieMode = true; this.setCircleProgress(100, 'action'); },
+            startSerieMode(data) { this.timerSubtext = `${this.currentRepetition}/${data.number}`; this.timerDisplay = 'GO!'; this.isSerieMode = true; this.setCircleProgress(100, 'action'); },
             finishSerieSet() { this.isSerieMode = false; this.decideNextStep(); },
-            runPause(duration, onComplete, phase = 'pause') {
+            runPause(duration, onComplete, phase = 'pause', subtext = null) {
                 this.beep(1400, 200);
                 if (duration > 0) {
-                    this.timerSubtext = (phase === 'prep') ? 'Préparation' : 'Pause';
+                    this.timerSubtext = subtext !== null ? subtext : (phase === 'prep') ? 'Préparation' : 'Pause';
                     let remaining = duration;
                     let halfTimeAnnounced = false;
                     const update = () => {
@@ -328,6 +315,7 @@
                 this.timerDisplay = '💪';
                 this.timerSubtext = 'Bravo !';
                 this.setCircleProgress(100, 'done');
+                this.speak('Workout complete! Well done', 'en-US');
                 this.isPaused = false; 
                 this.isSerieMode = false; 
                 this.releaseWakeLock(); 
