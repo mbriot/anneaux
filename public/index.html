@@ -29,8 +29,6 @@
         .plan-list { list-style: none; padding: 0; margin: 0; text-align: left; font-size: 1.6em}
         .plan-list li { display: flex; flex-direction: column; padding: 8px 5px; border-bottom: 1px solid var(--track-color); font-size: 1rem; }
         .plan-list li .exercise-main { display: flex; align-items: center; }
-        .plan-list li.completed { color: #666; }
-        .plan-list li.completed .exercise-main { text-decoration: line-through; }
         .plan-list li.current { color: gray; }
 
         .sub-tasks { padding-left: 25px; margin-top: 5px; display: flex; align-items: center; flex-wrap: wrap; }
@@ -100,7 +98,7 @@
 
         <div id="plan-container">
             <template v-for="(exercise, index) in workoutPlan" :key="index">
-                <li v-if="index >= currentExerciseIndex - 1" :class="{ completed: index < currentExerciseIndex, current: index === currentExerciseIndex }">
+                <li v-if="index >= currentExerciseIndex" :class="{ current: index === currentExerciseIndex }">
                     <div class="exercise-main plan-list">
                         <span>{{ formatExerciseTitle(exercise) }}</span>
                     </div>
