@@ -7,7 +7,7 @@
             "type": "EMOM", 
             "temps": { "every": 15, "during": 15 }, "repeat": { "number": 3, "pause_between": 15 }, 
             "pause_after": 30, 
-            "countdown_before": 10 
+            "countdown_before": 0 
         },
         { 
             "nom": "Dips", 
@@ -15,7 +15,7 @@
             "rest": 180,
             "number": 3,
             "pause_after": 180, 
-            "countdown_before": 10 
+            "countdown_before": 0 
         },
         { 
             "nom": "Pompes", 
@@ -23,15 +23,15 @@
             "rest": 60,
             "number": 3,
             "pause_after": 60, 
-            "countdown_before": 10
+            "countdown_before": 0
         },
         { 
             "nom": "Butterfly", 
             "type": "serie", 
             "rest": 60,
             "number": 3,
-            "pause_after": 60, 
-            "countdown_before": 10
+            "pause_after": 90, 
+            "countdown_before": 0
         },
         { 
             "nom": "Chandelle", 
@@ -46,7 +46,7 @@
             "rest": 180,
             "number": 3,
             "pause_after": 180, 
-            "countdown_before": 10 
+            "countdown_before": 0 
         },
         { 
             "nom": "Rowing", 
@@ -54,7 +54,7 @@
             "rest": 60,
             "number": 3,
             "pause_after": 60, 
-            "countdown_before": 10
+            "countdown_before": 0
         },
         { 
             "nom": "Butterfly Inversé", 
@@ -62,7 +62,7 @@
             "rest": 60,
             "number": 3,
             "pause_after": 60, 
-            "countdown_before": 10
+            "countdown_before": 0
         },
         { 
             "nom": "Abdo Superman", 
@@ -70,7 +70,7 @@
             "rest": 30,
             "number": 3,
             "pause_after": 30, 
-            "countdown_before": 10
+            "countdown_before": 0
         },
         { 
             "nom": "Abdo Remonté Genoux", 
@@ -78,7 +78,7 @@
             "rest": 30,
             "number": 3,
             "pause_after": 30, 
-            "countdown_before": 10
+            "countdown_before": 0
         }
     ]
 }
