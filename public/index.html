@@ -79,7 +79,7 @@
     </div>
     <div v-if="isWorkoutStarted" class="workout-view">
         <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
-        <button @click="goFullscreen" class="fullscreen-btn">⛶</button>
+        <button @click="toggleFullscreen" class="fullscreen-btn">⛶</button>
         <button @click="skipToNextExercise" class="skip-btn" v-if="currentExerciseIndex < workoutPlan.length">>></button>
         <div class="total-time-display">{{ formattedTotalTime }}</div>
         
@@ -148,16 +148,30 @@
             formattedTotalTime() { if (this.totalWorkoutTime <= 0) return '00:00'; const m = Math.floor(this.totalWorkoutTime / 60); const s = this.totalWorkoutTime % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; },
         },
         methods: {
-            goFullscreen() {
-                const el = document.documentElement;
-                if (el.requestFullscreen) {
-                    el.requestFullscreen();
-                } else if (el.mozRequestFullScreen) { /* Firefox */
-                    el.mozRequestFullScreen();
-                } else if (el.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-                    el.webkitRequestFullscreen();
-                } else if (el.msRequestFullscreen) { /* IE/Edge */
-                    el.msRequestFullscreen();
+            toggleFullscreen() {
+                const isInFullScreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+
+                if (!isInFullScreen) {
+                    const el = document.documentElement;
+                    if (el.requestFullscreen) {
+                        el.requestFullscreen();
+                    } else if (el.mozRequestFullScreen) { /* Firefox */
+                        el.mozRequestFullScreen();
+                    } else if (el.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                        el.webkitRequestFullscreen();
+                    } else if (el.msRequestFullscreen) { /* IE/Edge */
+                        el.msRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) { /* Firefox */
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) { /* Chrome, Safari & Opera */
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) { /* IE/Edge */
+                        document.msExitFullscreen();
+                    }
                 }
             },
             setCircleProgress(percent, phase) {
