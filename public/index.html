@@ -56,6 +56,7 @@
         .timer-subtext { font-size: 2.2rem; color: var(--text-secondary-color); margin-top: 10px; }
 
         .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+        .fullscreen-btn { position: absolute; top: 15px; left: 70px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
         .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.3rem; color: var(--text-secondary-color); }
         
         .next-btn, .ok-btn {
@@ -78,6 +79,7 @@
     </div>
     <div v-if="isWorkoutStarted" class="workout-view">
         <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
+        <button @click="goFullscreen" class="fullscreen-btn">⛶</button>
         <div class="total-time-display">{{ formattedTotalTime }}</div>
         
         <div class="main-display">
@@ -146,6 +148,18 @@
             formattedTotalTime() { if (this.totalWorkoutTime <= 0) return '00:00'; const m = Math.floor(this.totalWorkoutTime / 60); const s = this.totalWorkoutTime % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; },
         },
         methods: {
+            goFullscreen() {
+                const el = document.documentElement;
+                if (el.requestFullscreen) {
+                    el.requestFullscreen();
+                } else if (el.mozRequestFullScreen) { /* Firefox */
+                    el.mozRequestFullScreen();
+                } else if (el.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                    el.webkitRequestFullscreen();
+                } else if (el.msRequestFullscreen) { /* IE/Edge */
+                    el.msRequestFullscreen();
+                }
+            },
             setCircleProgress(percent, phase) {
                 const offset = this.circleCircumference - (percent / 100) * this.circleCircumference;
                 let color = 'var(--action-color)';
