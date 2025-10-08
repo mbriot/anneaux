@@ -14,7 +14,7 @@
             "type": "serie", 
             "rest": 180,
             "number": 3,
-            "pause_after": 180, 
+            "pause_after": 60, 
             "countdown_before": 0 
         },
         { 
@@ -37,7 +37,7 @@
             "nom": "Chandelle", 
             "type": "EMOM", 
             "temps": { "every": 30, "during": 30 }, "repeat": { "number": 3, "pause_between": 30 }, 
-            "pause_after": 60, 
+            "pause_after": 30, 
             "countdown_before": 0 
         },
         { 
