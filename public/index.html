@@ -198,8 +198,11 @@
                 } else {
                     if (exercise.repeat || exercise.type === 'serie') { this.currentRepetition++; }
                     const nextIndex = this.currentExerciseIndex + 1;
-                    if (nextIndex < this.workoutPlan.length) { this.exerciseName = this.workoutPlan[nextIndex].nom.toUpperCase(); }
-                    this.runPause(exercise.pause_after || 0, () => this.startNextExercise());
+                    if (nextIndex < this.workoutPlan.length) {
+                        this.exerciseName = this.workoutPlan[nextIndex].nom.toUpperCase();
+                    }
+                    const pauseDuration = (nextIndex < this.workoutPlan.length) ? (exercise.pause_after || 0) : 0;
+                    this.runPause(pauseDuration, () => this.startNextExercise());
                 }
             },
             startNextExercise() {
