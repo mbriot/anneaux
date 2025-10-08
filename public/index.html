@@ -57,13 +57,13 @@
 
         .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
         .fullscreen-btn { position: absolute; top: 15px; left: 70px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
+        .skip-btn { position: absolute; top: 15px; left: 125px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
         .total-time-display { position: absolute; top: 20px; right: 20px; font-size: 1.3rem; color: var(--text-secondary-color); }
         
-        .next-btn, .ok-btn {
+        .ok-btn {
             width: auto; padding: 10px 20px; font-size: 1rem; margin-top: 0px; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;
+            background-color: var(--done-color);
         }
-        .next-btn { background-color: #6c757d; }
-        .ok-btn { background-color: var(--done-color); }
     </style>
 </head>
 <body>
@@ -80,6 +80,7 @@
     <div v-if="isWorkoutStarted" class="workout-view">
         <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
         <button @click="goFullscreen" class="fullscreen-btn">⛶</button>
+        <button @click="skipToNextExercise" class="skip-btn" v-if="currentExerciseIndex < workoutPlan.length">>></button>
         <div class="total-time-display">{{ formattedTotalTime }}</div>
         
         <div class="main-display">
@@ -94,7 +95,6 @@
                 </div>
             </div>
             <h1 :style="{ color: phaseColor }">{{ exerciseName }}</h1>
-            <button @click="skipToNextExercise" class="next-btn" v-if="!isSerieMode && currentExerciseIndex < workoutPlan.length">Suivant</button>
             <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
         </div>
 
