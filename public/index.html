@@ -185,7 +185,7 @@
                 const exercise = this.workoutPlan[this.currentExerciseIndex];
                 if (exercise.type === 'serie' && this.currentRepetition < exercise.number) {
                     this.currentRepetition++;
-                    this.runPause(exercise.rest || 0, () => this.startSerieMode(exercise));
+                    this.runPause(exercise.rest || 0, () => this.startSerieMode(exercise), 'pause', `${this.currentRepetition}/${exercise.number}`);
                 } else if (exercise.repeat && this.currentRepetition < exercise.repeat.number) {
                     let subtext = null;
                     if (exercise.type === 'EMOM' && exercise.repeat) {
