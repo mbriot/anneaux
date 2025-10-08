@@ -39,7 +39,7 @@
             margin-bottom: 1rem;
             font-size: 1.8rem;
             font-weight: bold;
-            color: var(--text-color);
+
             white-space: normal;
             overflow-wrap: break-word;
             padding: 0 1rem;
@@ -52,8 +52,8 @@
         .timer-progress { stroke: var(--action-color); stroke-linecap: round; transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease; }
 
         .timer-text-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .timer-text { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; color: var(--action-color); }
-        .timer-subtext { font-size: 2.2rem; color: var(--text-secondary-color); margin-top: 10px; }
+        .timer-text { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; }
+        .timer-subtext { font-size: 2.2rem;  margin-top: 10px; }
 
         .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
         .fullscreen-btn { position: absolute; top: 15px; left: 70px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
@@ -89,11 +89,11 @@
                     <circle class="timer-progress" cx="50" cy="50" r="45" :style="progressStyle"></circle>
                 </svg>
                 <div class="timer-text-container">
-                    <div class="timer-text">{{ timerDisplay }}</div>
-                    <div class="timer-subtext">{{ timerSubtext }}</div>
+                    <div class="timer-text" :style="{ color: phaseColor }">{{ timerDisplay }}</div>
+                    <div class="timer-subtext" :style="{ color: phaseColor }">{{ timerSubtext }}</div>
                 </div>
             </div>
-            <h1>{{ exerciseName }}</h1>
+            <h1 :style="{ color: phaseColor }">{{ exerciseName }}</h1>
             <button @click="skipToNextExercise" class="next-btn" v-if="!isSerieMode && currentExerciseIndex < workoutPlan.length">Suivant</button>
             <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
         </div>
@@ -121,7 +121,7 @@
                 totalWorkoutTime: 0, totalTimeInterval: null,
                 exerciseName: '', timerDisplay: '', timerSubtext: '',
                 countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null,
-                progressStyle: {}, circleCircumference: 0
+                progressStyle: {}, circleCircumference: 0, phaseColor: 'var(--action-color)'
             };
         },
         async created() {
@@ -165,11 +165,13 @@
                 let color = 'var(--action-color)';
                 if (phase === 'prep') color = 'var(--prep-color)';
                 else if (phase === 'pause') color = 'var(--pause-color)';
+                else if (phase === 'done') color = 'var(--done-color)';
                 this.progressStyle = {
                     strokeDasharray: `${this.circleCircumference}`,
                     strokeDashoffset: offset,
                     stroke: color
                 };
+                this.phaseColor = color;
             },
             formatExerciseTitle(exercise) {
                 let parts = [exercise.nom.split(' ').map(word => word.toUpperCase()).join(' ')];
