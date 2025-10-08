@@ -135,6 +135,12 @@
             this.predefinedWorkouts = workouts;
             this.circleCircumference = 2 * Math.PI * 45; // 45 is the radius 'r' of the circle in SVG
             this.setCircleProgress(0, 'action');
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && this.isWorkoutStarted && !this.isPaused) {
+                    this.requestWakeLock();
+                }
+            });
         },
         computed: {
             formattedTotalTime() { if (this.totalWorkoutTime <= 0) return '00:00'; const m = Math.floor(this.totalWorkoutTime / 60); const s = this.totalWorkoutTime % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; },
