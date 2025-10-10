@@ -7,48 +7,48 @@
         "type": "EMOM", 
         "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
         "pause_after": 30, 
-        "countdown_before": 0 
+        "countdown_before": 10 
     },
     { 
         "nom": "EMOM Tractions", 
         "type": "EMOM", 
-        "temps": { "every": 60, "during": 540 }, 
+        "temps": { "every": 60, "during": 600 }, 
         "pause_after": 0, 
         "countdown_before": 30 
     },
     { 
         "nom": "EMOM Dips", 
         "type": "EMOM", 
-        "temps": { "every": 60, "during": 540 }, 
-        "pause_after": 30, 
-        "countdown_before": 30  
+        "temps": { "every": 60, "during": 600 }, 
+        "pause_after": 0, 
+        "countdown_before": 0  
     },
     { 
         "nom": "Rowing bas", 
         "type": "EMOM", 
         "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
         "pause_after": 30, 
-        "countdown_before": 30 
+        "countdown_before": 10 
     },
     { 
         "nom": "EMOM Tractions", 
         "type": "EMOM", 
-        "temps": { "every": 60, "during": 540 }, 
-        "pause_after": 30, 
-        "countdown_before": 10 
+        "temps": { "every": 60, "during": 600 }, 
+        "pause_after": 0, 
+        "countdown_before": 0 
     },
     { 
         "nom": "EMOM Dips", 
         "type": "EMOM", 
-        "temps": { "every": 60, "during": 540 }, 
-        "pause_after": 30, 
-        "countdown_before": 10 
+        "temps": { "every": 60, "during": 600 }, 
+        "pause_after": 0, 
+        "countdown_before": 0 
     },
     { 
         "nom": "Rowing bas", 
         "type": "EMOM", 
         "temps": { "every": 30, "during": 30 }, "repeat": { "number": 4, "pause_between": 30 }, 
-        "pause_after": 30, 
+        "pause_after": 0, 
         "countdown_before": 10 
     }
     ]
