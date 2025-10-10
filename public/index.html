@@ -54,6 +54,7 @@
         .timer-text-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .timer-text { font-size: clamp(3.5rem, 18vw, 5.5rem); font-weight: bold; font-family: "Courier New", Courier, monospace; }
         .timer-subtext { font-size: 2.2rem;  margin-top: 10px; }
+        .timer-pause-text { font-size: 1.5rem; color: var(--pause-color); margin-top: 5px; }
 
         .pause-btn { position: absolute; top: 15px; left: 15px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
         .fullscreen-btn { position: absolute; top: 15px; left: 70px; width: 45px; height: 45px; padding: 0; font-size: 1.3rem; border-radius: 50%; z-index: 10; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; }
@@ -92,6 +93,7 @@
                 <div class="timer-text-container">
                     <div class="timer-text" :style="{ color: phaseColor }">{{ timerDisplay }}</div>
                     <div class="timer-subtext" :style="{ color: phaseColor }">{{ timerSubtext }}</div>
+                    <div v-if="isBreakTime" class="timer-pause-text">en pause</div>
                 </div>
             </div>
             <h1 :style="{ color: phaseColor }">{{ exerciseName }}</h1>
@@ -117,7 +119,7 @@
                 predefinedWorkouts: {},
                 selectedWorkoutPlan: null,
                 workoutPlan: [],
-                currentExerciseIndex: -1, currentRepetition: 0, currentEmomRound: 0, isPaused: false, isSerieMode: false,
+                currentExerciseIndex: -1, currentRepetition: 0, currentEmomRound: 0, isPaused: false, isSerieMode: false, isBreakTime: false,
                 totalWorkoutTime: 0, totalTimeInterval: null,
                 exerciseName: '', timerDisplay: '', timerSubtext: '',
                 countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null,
@@ -260,6 +262,7 @@
             },
             startMainTimer(data) { this.beep(1200, 150); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); else this.startFullTimeTimer(data); },
             startFullTimeTimer(data) {
+                this.isBreakTime = false;
                 this.timerSubtext = 'Action !';
                 const duration = data.temps.secondes || 0; let remaining = duration;
                 let halfTimeAnnounced = false;
@@ -284,6 +287,7 @@
                 }, 1000);
             },
             startEmomTimer(data) {
+                this.isBreakTime = false;
                 this.currentEmomRound = 1;
                 let totalDuration = data.temps.during || 0; const roundDuration = data.temps.every || 60; let currentRoundTime = roundDuration;
                 let halfTimeAnnouncedInRound = false;
@@ -317,9 +321,10 @@
                     }
                 }, 1000);
             },
-            startSerieMode(data) { this.timerSubtext = `${this.currentRepetition}/${data.number}`; this.timerDisplay = 'GO!'; this.isSerieMode = true; this.setCircleProgress(100, 'action'); },
+            startSerieMode(data) { this.isBreakTime = false; this.timerSubtext = `${this.currentRepetition}/${data.number}`; this.timerDisplay = 'GO!'; this.isSerieMode = true; this.setCircleProgress(100, 'action'); },
             finishSerieSet() { this.isSerieMode = false; this.decideNextStep(); },
             runPause(duration, onComplete, phase = 'pause', subtext = null) {
+                this.isBreakTime = true;
                 this.beep(1400, 200);
                 if (duration > 0) {
                     this.timerSubtext = subtext !== null ? subtext : (phase === 'prep') ? 'Préparation' : 'Pause';
@@ -329,6 +334,10 @@
                         this.timerDisplay = remaining;
                         const percent = duration > 0 ? ((duration - remaining) / duration) * 100 : 0;
                         this.setCircleProgress(percent, phase);
+                    };
+                    const onPauseComplete = () => {
+                        this.isBreakTime = false;
+                        onComplete();
                     };
                     update();
                     this.countdownInterval = setInterval(() => {
@@ -341,9 +350,9 @@
                         }
                         if (remaining > 0 && remaining <= 3) this.beep(880, 100);
                         update();
-                        if (remaining < 0) { clearInterval(this.countdownInterval); onComplete(); }
+                        if (remaining < 0) { clearInterval(this.countdownInterval); onPauseComplete(); }
                     }, 1000);
-                } else { onComplete(); }
+                } else { this.isBreakTime = false; onComplete(); }
             },
             finishWorkout() { 
                 if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); 
