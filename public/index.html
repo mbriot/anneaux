@@ -260,32 +260,7 @@
                 }
                 this.runPause(data.countdown_before || 0, () => this.startMainTimer(data), 'prep', subtext);
             },
-            startMainTimer(data) { this.beep(1200, 150); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); else this.startFullTimeTimer(data); },
-            startFullTimeTimer(data) {
-                this.isBreakTime = false;
-                this.timerSubtext = 'Action !';
-                const duration = data.temps.secondes || 0; let remaining = duration;
-                let halfTimeAnnounced = false;
-                const update = () => {
-                    if (remaining < 0) return;
-                    this.timerDisplay = `${String(Math.floor(remaining / 60)).padStart(2, '0')}:${String(remaining % 60).padStart(2, '0')}`;
-                    const percent = duration > 0 ? ((duration - remaining) / duration) * 100 : 0;
-                    this.setCircleProgress(percent, 'action');
-                };
-                update();
-                this.countdownInterval = setInterval(() => {
-                    if (this.isPaused) return;
-                    remaining--;
-                    if (remaining === 10 && duration >= 30) this.speak('Ten seconds left', 'en-US');
-                    if (remaining > 0 && remaining <= 4) this.beep(880, 100);
-                    if (!halfTimeAnnounced && remaining > 0 && remaining <= duration / 2) {
-                        this.speak('Half time!', 'en-US');
-                        halfTimeAnnounced = true;
-                    }
-                    update();
-                    if (remaining < 0) { clearInterval(this.countdownInterval); this.decideNextStep(); }
-                }, 1000);
-            },
+            startMainTimer(data) { this.beep(1200, 150); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); },
             startEmomTimer(data) {
                 this.isBreakTime = false;
                 this.currentEmomRound = 1;

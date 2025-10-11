@@ -40,39 +40,9 @@ Le `plan` est un tableau d'objets, où chaque objet représente un exercice. Voi
 | Propriété          | Type    | Description                                                                 |
 | ------------------ | ------- | --------------------------------------------------------------------------- |
 | `nom`              | String  | Le nom de l'exercice qui sera affiché.                                      |
-| `type`             | String  | Le type d'exercice. Valeurs possibles : `full_time`, `serie`, `EMOM`.       |
+| `type`             | String  | Le type d'exercice. Valeurs possibles : `serie`, `EMOM`.                   |
 | `pause_after`      | Number  | Temps de pause en secondes après la fin de l'exercice.                      |
 | `countdown_before` | Number  | Temps de préparation en secondes avant le début de l'exercice.              |
-
----
-
-### Type: `full_time`
-
-Cet exercice dure un temps défini.
-
-**Propriétés spécifiques :**
-
-| Propriété | Type   | Description                               |
-| --------- | ------ | ----------------------------------------- |
-| `temps`   | Object | Un objet contenant la durée de l'exercice. |
-
-**Exemple `temps` :**
-
-```json
-{ "secondes": 60 }
-```
-
-**Exemple complet :**
-
-```json
-{
-    "nom": "Maintien à l'appui",
-    "type": "full_time",
-    "temps": { "secondes": 30 },
-    "pause_after": 15,
-    "countdown_before": 5
-}
-```
 
 ---
 
