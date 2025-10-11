@@ -6,171 +6,78 @@
     <title>Anneaux !</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Composants Vue -->
+    <script src="js/CircleTimer.js"></script>
+    <script src="js/ExerciseEditor.js"></script>
+    <script src="js/WorkoutSelector.js"></script>
+    <script src="js/WorkoutEditor.js"></script>
+    <script src="js/WorkoutTimer.js"></script>
 </head>
 <body>
 <div id="app">
-    <div v-if="!isWorkoutStarted && !isEditing">
-        <h2>Choisissez votre séance</h2>
-        <select v-model="selectedWorkoutPlan">
-            <option :value="null" disabled>-- Sélectionnez un programme --</option>
-            <option v-for="(workout, key) in predefinedWorkouts" :key="key" :value="workout.plan">{{ workout.name }}</option>
-        </select>
-        <br>
-        <div class="main-buttons">
-            <button @click="editWorkout" :disabled="!selectedWorkoutPlan" class="btn-edit">Éditer la séance</button>
-            <button @click="startWorkout" :disabled="!selectedWorkoutPlan" class="btn-start">Commencer directement</button>
-        </div>
-    </div>
+    <workout-selector v-if="!isWorkoutStarted && !isEditing"
+                     :predefined-workouts="predefinedWorkouts"
+                     v-model:selected-workout-plan="selectedWorkoutPlan"
+                     @edit-workout="editWorkout"
+                     @start-workout="startWorkout"></workout-selector>
 
-    <div v-if="isEditing" class="editor-view">
-        <div class="editor-header">
-            <h2>Éditer la séance</h2>
-            <div class="editor-actions">
-                <button @click="cancelEdit" class="btn-secondary">Annuler</button>
-                <button @click="saveAndStart" class="btn-primary">Sauver et Commencer</button>
-            </div>
-        </div>
+    <workout-editor v-if="isEditing"
+                   :selected-workout-plan="selectedWorkoutPlan"
+                   @cancel-edit="cancelEdit"
+                   @save-and-start="saveAndStart"></workout-editor>
 
-        <button @click="addNewExercise" class="btn-add" style="width: 100%; margin-bottom: 15px; padding: 10px;">+ Ajouter un exercice</button>
-
-        <div v-for="(exercise, index) in editingPlan" :key="index" class="exercise-editor">
-            <div class="exercise-header">
-                <div class="exercise-title">{{ exercise.nom }}</div>
-                <div class="exercise-controls">
-                    <button @click="moveExerciseUp(index)" :disabled="index === 0" class="btn-secondary">↑</button>
-                    <button @click="moveExerciseDown(index)" :disabled="index === editingPlan.length - 1" class="btn-secondary">↓</button>
-                    <button @click="removeExercise(index)" class="btn-remove">Supprimer</button>
-                </div>
-            </div>
-            
-            <div class="exercise-details">
-                <!-- Paramètres de base -->
-                <div class="exercise-param">
-                    <label>Nom:</label>
-                    <input v-model="exercise.nom" type="text" placeholder="Nom de l'exercice">
-                </div>
-                
-                <div class="exercise-param">
-                    <label>Type:</label>
-                    <select v-model="exercise.type" @change="onTypeChange(index)">
-                        <option value="serie">Série</option>
-                        <option value="EMOM">EMOM</option>
-                    </select>
-                </div>
-
-                <!-- Paramètres spécifiques au type série -->
-                <div v-if="exercise.type === 'serie' && exercise.number !== undefined" class="param-section">
-                    <h4>Paramètres Série</h4>
-                    <div class="exercise-param">
-                        <label>Nombre de séries:</label>
-                        <input v-model.number="exercise.number" type="number" min="1" max="20">
-                    </div>
-                    <div class="exercise-param">
-                        <label>Repos entre séries:</label>
-                        <input v-model.number="exercise.rest" type="number" min="0" max="600">
-                        <span>secondes</span>
-                    </div>
-                </div>
-
-                <!-- Paramètres spécifiques au type EMOM -->
-                <div v-if="exercise.type === 'EMOM' && exercise.temps" class="param-section">
-                    <h4>Paramètres EMOM</h4>
-                    <div class="exercise-param">
-                        <label>Intervalle:</label>
-                        <input v-model.number="exercise.temps.every" type="number" min="10" max="300">
-                        <span>secondes</span>
-                    </div>
-                    <div class="exercise-param">
-                        <label>Durée totale:</label>
-                        <input v-model.number="exercise.temps.during" type="number" min="30" max="1800">
-                        <span>secondes</span>
-                    </div>
-                    
-                    <div class="exercise-param">
-                        <label>Répéter le bloc:</label>
-                        <input v-model="exercise.hasRepeat" type="checkbox" @change="onEmomRepeatChange(index)">
-                        <span>Oui</span>
-                    </div>
-                    
-                    <div v-if="exercise.hasRepeat && exercise.repeat" class="exercise-param">
-                        <label>Nombre de répétitions:</label>
-                        <input v-model.number="exercise.repeat.number" type="number" min="1" max="10">
-                        <span>fois</span>
-                    </div>
-                    <div v-if="exercise.hasRepeat && exercise.repeat" class="exercise-param">
-                        <label>Pause entre blocs:</label>
-                        <input v-model.number="exercise.repeat.pause_between" type="number" min="0" max="300">
-                        <span>secondes</span>
-                    </div>
-                </div>
-
-                <!-- Paramètres de timing -->
-                <div class="param-section">
-                    <h4>Timing</h4>
-                    <div class="exercise-param">
-                        <label>Pause après exercice:</label>
-                        <input v-model.number="exercise.pause_after" type="number" min="0" max="600">
-                        <span>secondes</span>
-                    </div>
-                    <div class="exercise-param">
-                        <label>Préparation avant:</label>
-                        <input v-model.number="exercise.countdown_before" type="number" min="0" max="60">
-                        <span>secondes</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div v-if="isWorkoutStarted" class="workout-view">
-        <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
-        <button @click="toggleFullscreen" class="fullscreen-btn">⛶</button>
-        <button @click="skipToNextExercise" class="skip-btn" v-if="currentExerciseIndex < workoutPlan.length">>></button>
-        <div class="total-time-display">{{ formattedTotalTime }}</div>
-        
-        <div class="main-display">
-            <div class="circle-timer">
-                <svg viewBox="0 0 100 100">
-                    <circle class="timer-track" cx="50" cy="50" r="45"></circle>
-                    <circle class="timer-progress" cx="50" cy="50" r="45" :style="progressStyle"></circle>
-                </svg>
-                <div class="timer-text-container">
-                    <div class="timer-text" :style="{ color: phaseColor }">{{ timerDisplay }}</div>
-                    <div class="timer-subtext" :style="{ color: phaseColor }">{{ timerSubtext }}</div>
-                    <div v-if="isBreakTime" class="timer-pause-text">en pause</div>
-                </div>
-            </div>
-            <h1 :style="{ color: phaseColor }">{{ exerciseName }}</h1>
-            <button v-if="isSerieMode && !isPaused" @click="finishSerieSet" class="ok-btn">OK</button>
-        </div>
-
-        <div id="plan-container">
-            <template v-for="(exercise, index) in workoutPlan" :key="index">
-                <li v-if="index >= currentExerciseIndex" :class="{ current: index === currentExerciseIndex }">
-                    <div class="exercise-main plan-list">
-                        <span>{{ formatExerciseTitle(exercise) }}</span>
-                    </div>
-                </li>
-            </template>
-        </div>
-    </div>
+    <workout-timer v-if="isWorkoutStarted"
+                  :workout-plan="workoutPlan"
+                  :current-exercise-index="currentExerciseIndex"
+                  :exercise-name="exerciseName"
+                  :timer-display="timerDisplay"
+                  :timer-subtext="timerSubtext"
+                  :progress-style="progressStyle"
+                  :phase-color="phaseColor"
+                  :is-break-time="isBreakTime"
+                  :is-paused="isPaused"
+                  :is-serie-mode="isSerieMode"
+                  :formatted-total-time="formattedTotalTime"
+                  @toggle-pause="togglePause"
+                  @toggle-fullscreen="toggleFullscreen"
+                  @skip-to-next="skipToNextExercise"
+                  @finish-serie-set="finishSerieSet"></workout-timer>
 </div>
+
 <script>
     const { createApp } = Vue;
+    
     createApp({
+        components: {
+            WorkoutSelector: window.WorkoutSelector,
+            WorkoutEditor: window.WorkoutEditor,
+            WorkoutTimer: window.WorkoutTimer
+        },
         data() {
             return {
                 predefinedWorkouts: {},
                 selectedWorkoutPlan: null,
                 workoutPlan: [],
-                currentExerciseIndex: -1, currentRepetition: 0, currentEmomRound: 0, isPaused: false, isSerieMode: false, isBreakTime: false,
-                totalWorkoutTime: 0, totalTimeInterval: null,
-                exerciseName: '', timerDisplay: '', timerSubtext: '',
-                countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null,
-                progressStyle: {}, circleCircumference: 0, phaseColor: 'var(--action-color)',
+                currentExerciseIndex: -1, 
+                currentRepetition: 0, 
+                currentEmomRound: 0, 
+                isPaused: false, 
+                isSerieMode: false, 
+                isBreakTime: false,
+                totalWorkoutTime: 0, 
+                totalTimeInterval: null,
+                exerciseName: '', 
+                timerDisplay: '', 
+                timerSubtext: '',
+                countdownInterval: null, 
+                isWorkoutStarted: false, 
+                wakeLock: null, 
+                audioContext: null,
+                progressStyle: {}, 
+                circleCircumference: 0, 
+                phaseColor: 'var(--action-color)',
                 // Variables pour l'éditeur
-                isEditing: false,
-                editingPlan: [],
-                originalPlan: null
+                isEditing: false
             };
         },
         async created() {
@@ -194,9 +101,49 @@
             });
         },
         computed: {
-            formattedTotalTime() { if (this.totalWorkoutTime <= 0) return '00:00'; const m = Math.floor(this.totalWorkoutTime / 60); const s = this.totalWorkoutTime % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; },
+            formattedTotalTime() { 
+                if (this.totalWorkoutTime <= 0) return '00:00'; 
+                const m = Math.floor(this.totalWorkoutTime / 60); 
+                const s = this.totalWorkoutTime % 60; 
+                return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; 
+            },
         },
         methods: {
+            // Méthodes pour l'éditeur de séance
+            editWorkout() {
+                if (!this.selectedWorkoutPlan) return;
+                this.isEditing = true;
+                document.body.classList.add('editing');
+                document.body.classList.remove('workout');
+            },
+            cancelEdit() {
+                this.isEditing = false;
+                document.body.classList.remove('editing');
+                document.getElementById('app').classList.remove('workout-mode');
+            },
+            saveAndStart(cleanedPlan) {
+                this.selectedWorkoutPlan = cleanedPlan;
+                this.isEditing = false;
+                document.body.classList.remove('editing');
+                this.startWorkout();
+            },
+            
+            // Méthodes pour le minuteur circulaire
+            setCircleProgress(percent, phase) {
+                const offset = this.circleCircumference - (percent / 100) * this.circleCircumference;
+                let color = 'var(--action-color)';
+                if (phase === 'prep') color = 'var(--prep-color)';
+                else if (phase === 'pause') color = 'var(--pause-color)';
+                else if (phase === 'done') color = 'var(--done-color)';
+                this.progressStyle = {
+                    strokeDasharray: `${this.circleCircumference}`,
+                    strokeDashoffset: offset,
+                    stroke: color
+                };
+                this.phaseColor = color;
+            },
+            
+            // Méthodes pour le contrôle de l'écran
             toggleFullscreen() {
                 const isInFullScreen = document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
 
@@ -223,207 +170,91 @@
                     }
                 }
             },
-            // Méthodes pour l'éditeur de séance
-            editWorkout() {
-                if (!this.selectedWorkoutPlan) return;
-                this.originalPlan = JSON.parse(JSON.stringify(this.selectedWorkoutPlan));
-                this.editingPlan = JSON.parse(JSON.stringify(this.selectedWorkoutPlan));
-                
-                // S'assurer que tous les exercices ont les bonnes propriétés
-                this.editingPlan = this.editingPlan.map(exercise => {
-                    const newExercise = { ...exercise };
-                    
-                    // Propriétés communes
-                    if (newExercise.pause_after === undefined) newExercise.pause_after = 30;
-                    if (newExercise.countdown_before === undefined) newExercise.countdown_before = 5;
-                    
-                    // Propriétés spécifiques par type
-                    if (newExercise.type === 'serie') {
-                        if (!newExercise.number) newExercise.number = 3;
-                        if (newExercise.rest === undefined) newExercise.rest = 60;
-                    } else if (newExercise.type === 'EMOM') {
-                        if (!newExercise.temps) {
-                            newExercise.temps = { every: 60, during: 300 };
-                        } else {
-                            // S'assurer que temps a toutes les propriétés nécessaires
-                            if (!newExercise.temps.every) newExercise.temps.every = 60;
-                            if (!newExercise.temps.during) newExercise.temps.during = 300;
-                        }
-                        // Initialiser hasRepeat basé sur l'existence de repeat
-                        newExercise.hasRepeat = !!newExercise.repeat;
-                        if (newExercise.hasRepeat && !newExercise.repeat) {
-                            newExercise.repeat = { number: 1, pause_between: 30 };
-                        }
+            
+            // Méthodes pour les contrôles d'entraînement
+            skipToNextExercise() { 
+                if (this.countdownInterval) { 
+                    clearInterval(this.countdownInterval); 
+                } 
+                this.startNextExercise(); 
+            },
+            
+            // Méthodes audio
+            speak(text, lang = 'en-US') { 
+                if ('speechSynthesis' in window) { 
+                    window.speechSynthesis.cancel(); 
+                    const u = new SpeechSynthesisUtterance(text); 
+                    u.lang = lang; 
+                    u.rate = 0.9; 
+                    window.speechSynthesis.speak(u); 
+                } 
+            },
+            beep(freq = 880, duration = 100) { 
+                if (!this.audioContext) return; 
+                const o = this.audioContext.createOscillator(); 
+                const g = this.audioContext.createGain(); 
+                o.connect(g); 
+                o.frequency.value = freq; 
+                o.type = 'sine'; 
+                g.connect(this.audioContext.destination); 
+                g.gain.setValueAtTime(1, this.audioContext.currentTime); 
+                g.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration / 1000); 
+                o.start(); 
+                o.stop(this.audioContext.currentTime + duration / 1000); 
+            },
+            
+            // Méthodes pour Wake Lock
+            async requestWakeLock() { 
+                if ('wakeLock' in navigator && !this.isPaused) 
+                    try { 
+                        this.wakeLock = await navigator.wakeLock.request('screen'); 
+                    } catch (e) { 
+                        console.error(e); 
                     }
-                    
-                    return newExercise;
-                });
-                
-                this.isEditing = true;
-                document.body.classList.add('editing');
-                document.body.classList.remove('workout');
             },
-            cancelEdit() {
-                this.isEditing = false;
-                this.editingPlan = [];
-                this.originalPlan = null;
-                document.body.classList.remove('editing');
-                document.getElementById('app').classList.remove('workout-mode');
+            async releaseWakeLock() { 
+                if (this.wakeLock) { 
+                    await this.wakeLock.release(); 
+                    this.wakeLock = null; 
+                } 
             },
-            saveAndStart() {
-                // Nettoyer les propriétés helper avant de sauvegarder
-                const cleanedPlan = JSON.parse(JSON.stringify(this.editingPlan));
-                cleanedPlan.forEach((exercise, index) => {
-                    // Supprimer la propriété helper hasRepeat
-                    const originalExercise = this.editingPlan[index];
-                    delete exercise.hasRepeat;
-                    // Si EMOM sans répétition, s'assurer que repeat n'existe pas
-                    if (exercise.type === 'EMOM' && !originalExercise.hasRepeat) {
-                        delete exercise.repeat;
-                    }
-                });
-                
-                this.selectedWorkoutPlan = cleanedPlan;
-                this.isEditing = false;
-                document.body.classList.remove('editing');
-                this.startWorkout();
+            
+            // Méthodes de contrôle d'entraînement
+            togglePause() { 
+                this.isPaused = !this.isPaused; 
+                if (this.isPaused) { 
+                    if ('speechSynthesis' in window) window.speechSynthesis.pause(); 
+                    this.releaseWakeLock(); 
+                } else { 
+                    if ('speechSynthesis' in window) window.speechSynthesis.resume(); 
+                    this.requestWakeLock(); 
+                } 
             },
-            removeExercise(index) {
-                if (this.editingPlan.length > 1) {
-                    this.editingPlan.splice(index, 1);
-                }
-            },
-            moveExerciseUp(index) {
-                if (index > 0) {
-                    const exercise = this.editingPlan.splice(index, 1)[0];
-                    this.editingPlan.splice(index - 1, 0, exercise);
-                }
-            },
-            moveExerciseDown(index) {
-                if (index < this.editingPlan.length - 1) {
-                    const exercise = this.editingPlan.splice(index, 1)[0];
-                    this.editingPlan.splice(index + 1, 0, exercise);
-                }
-            },
-            increaseReps(index) {
-                if (this.editingPlan[index].type === 'serie') {
-                    this.editingPlan[index].number++;
-                }
-            },
-            decreaseReps(index) {
-                if (this.editingPlan[index].type === 'serie' && this.editingPlan[index].number > 1) {
-                    this.editingPlan[index].number--;
-                }
-            },
-            increaseEmomReps(index) {
-                if (this.editingPlan[index].type === 'EMOM' && this.editingPlan[index].repeat) {
-                    this.editingPlan[index].repeat.number++;
-                }
-            },
-            decreaseEmomReps(index) {
-                if (this.editingPlan[index].type === 'EMOM' && this.editingPlan[index].repeat && this.editingPlan[index].repeat.number > 1) {
-                    this.editingPlan[index].repeat.number--;
-                }
-            },
-            onTypeChange(index) {
-                const exercise = this.editingPlan[index];
-                
-                // Créer un nouvel objet exercice avec les bonnes propriétés
-                const newExercise = {
-                    nom: exercise.nom,
-                    type: exercise.type,
-                    pause_after: exercise.pause_after !== undefined ? exercise.pause_after : 30,
-                    countdown_before: exercise.countdown_before !== undefined ? exercise.countdown_before : 5
-                };
-                
-                if (exercise.type === 'serie') {
-                    // Propriétés spécifiques aux séries
-                    newExercise.number = exercise.number || 3;
-                    newExercise.rest = exercise.rest !== undefined ? exercise.rest : 60;
-                } else if (exercise.type === 'EMOM') {
-                    // Propriétés spécifiques aux EMOM
-                    newExercise.temps = {
-                        every: (exercise.temps && exercise.temps.every) || 60,
-                        during: (exercise.temps && exercise.temps.during) || 300
-                    };
-                    newExercise.hasRepeat = false;
-                    // Ne pas ajouter repeat par défaut
-                }
-                
-                // Remplacer l'exercice entier pour assurer la réactivité
-                this.editingPlan.splice(index, 1, newExercise);
-            },
-            onEmomRepeatChange(index) {
-                const exercise = this.editingPlan[index];
-                if (exercise.hasRepeat) {
-                    // Activer les répétitions
-                    if (!exercise.repeat) {
-                        exercise.repeat = { number: 1, pause_between: 30 };
-                    }
-                } else {
-                    // Désactiver les répétitions
-                    delete exercise.repeat;
-                }
-                // Déclencher une mise à jour réactive
-                this.editingPlan[index] = { ...exercise };
-            },
-            addNewExercise() {
-                const newExercise = {
-                    nom: "Nouvel exercice",
-                    type: "serie",
-                    number: 3,
-                    rest: 60,
-                    pause_after: 30,
-                    countdown_before: 5
-                };
-                this.editingPlan.push(newExercise);
-            },
-            setCircleProgress(percent, phase) {
-                const offset = this.circleCircumference - (percent / 100) * this.circleCircumference;
-                let color = 'var(--action-color)';
-                if (phase === 'prep') color = 'var(--prep-color)';
-                else if (phase === 'pause') color = 'var(--pause-color)';
-                else if (phase === 'done') color = 'var(--done-color)';
-                this.progressStyle = {
-                    strokeDasharray: `${this.circleCircumference}`,
-                    strokeDashoffset: offset,
-                    stroke: color
-                };
-                this.phaseColor = color;
-            },
-            formatExerciseTitle(exercise) {
-                let parts = [exercise.nom.split(' ').map(word => word.toUpperCase()).join(' ')];
-                if (exercise.type) { parts.push(exercise.type.toUpperCase()); }
-                let repCount = 0;
-                if (exercise.type === 'serie' && exercise.number) { repCount = exercise.number; }
-                else if (exercise.type === 'EMOM') {
-                    if (exercise.repeat && exercise.repeat.number) { repCount = exercise.repeat.number; }
-                    else if (exercise.temps && exercise.temps.during && exercise.temps.every) { repCount = Math.floor(exercise.temps.during / exercise.temps.every); }
-                }
-                if (repCount > 1) { parts.push(repCount); }
-                return parts.join(' - ');
-            },
-            skipToNextExercise() { if (this.countdownInterval) { clearInterval(this.countdownInterval); } this.startNextExercise(); },
-            speak(text, lang = 'en-US') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = lang; u.rate = 0.9; window.speechSynthesis.speak(u); } },
-            beep(freq = 880, duration = 100) { if (!this.audioContext) return; const o = this.audioContext.createOscillator(); const g = this.audioContext.createGain(); o.connect(g); o.frequency.value = freq; o.type = 'sine'; g.connect(this.audioContext.destination); g.gain.setValueAtTime(1, this.audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, this.audioContext.currentTime + duration / 1000); o.start(); o.stop(this.audioContext.currentTime + duration / 1000); },
-            async requestWakeLock() { if ('wakeLock' in navigator && !this.isPaused) try { this.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) { console.error(e); } },
-            async releaseWakeLock() { if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; } },
-            togglePause() { this.isPaused = !this.isPaused; if (this.isPaused) { if ('speechSynthesis' in window) window.speechSynthesis.pause(); this.releaseWakeLock(); } else { if ('speechSynthesis' in window) window.speechSynthesis.resume(); this.requestWakeLock(); } },
+            
+            // Démarrage d'entraînement
             startWorkout() {
                 if (!this.selectedWorkoutPlan) return;
                 if (!this.audioContext) this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 if (this.countdownInterval) clearInterval(this.countdownInterval);
                 if (this.totalTimeInterval) clearInterval(this.totalTimeInterval);
                 const plan = this.selectedWorkoutPlan;
-                this.workoutPlan = plan; this.currentExerciseIndex = -1; this.isWorkoutStarted = true; this.isPaused = false; this.isSerieMode = false;
+                this.workoutPlan = plan; 
+                this.currentExerciseIndex = -1; 
+                this.isWorkoutStarted = true; 
+                this.isPaused = false; 
+                this.isSerieMode = false;
                 this.totalWorkoutTime = 0;
-                this.totalTimeInterval = setInterval(() => { if (!this.isPaused) this.totalWorkoutTime++; }, 1000);
+                this.totalTimeInterval = setInterval(() => { 
+                    if (!this.isPaused) this.totalWorkoutTime++; 
+                }, 1000);
                 document.body.classList.add('workout');
                 document.body.classList.remove('editing');
                 document.getElementById('app').classList.add('workout-mode');
                 this.requestWakeLock();
                 this.startNextExercise();
             },
+            
+            // Logique d'entraînement
             decideNextStep() {
                 const exercise = this.workoutPlan[this.currentExerciseIndex];
                 if (exercise.type === 'serie' && this.currentRepetition < exercise.number) {
@@ -439,7 +270,9 @@
                         this.startMainTimer(exercise);
                     }, 'pause', subtext);
                 } else {
-                    if (exercise.repeat || exercise.type === 'serie') { this.currentRepetition++; }
+                    if (exercise.repeat || exercise.type === 'serie') { 
+                        this.currentRepetition++; 
+                    }
                     const nextIndex = this.currentExerciseIndex + 1;
                     if (nextIndex < this.workoutPlan.length) {
                         this.exerciseName = this.workoutPlan[nextIndex].nom.toUpperCase();
@@ -451,7 +284,10 @@
             startNextExercise() {
                 this.isSerieMode = false;
                 this.currentExerciseIndex++;
-                if (this.currentExerciseIndex >= this.workoutPlan.length) { this.finishWorkout(); return; }
+                if (this.currentExerciseIndex >= this.workoutPlan.length) { 
+                    this.finishWorkout(); 
+                    return; 
+                }
                 this.currentRepetition = 1;
                 this.currentEmomRound = 0;
                 const exercise = this.workoutPlan[this.currentExerciseIndex];
@@ -465,23 +301,33 @@
                 }
                 this.runPause(data.countdown_before || 0, () => this.startMainTimer(data), 'prep', subtext);
             },
-            startMainTimer(data) { this.beep(1200, 150); if (data.type === 'serie') this.startSerieMode(data); else if (data.type === 'EMOM') this.startEmomTimer(data); },
+            startMainTimer(data) { 
+                this.beep(1200, 150); 
+                if (data.type === 'serie') this.startSerieMode(data); 
+                else if (data.type === 'EMOM') this.startEmomTimer(data); 
+            },
             startEmomTimer(data) {
                 this.isBreakTime = false;
                 this.currentEmomRound = 1;
-                let totalDuration = data.temps.during || 0; const roundDuration = data.temps.every || 60; let currentRoundTime = roundDuration;
+                let totalDuration = data.temps.during || 0; 
+                const roundDuration = data.temps.every || 60; 
+                let currentRoundTime = roundDuration;
                 let halfTimeAnnouncedInRound = false;
                 const update = () => {
                     this.timerDisplay = `${String(Math.floor(currentRoundTime/60)).padStart(2,'0')}:${String(currentRoundTime%60).padStart(2,'0')}`;
                     const percent = roundDuration > 0 ? ((roundDuration - currentRoundTime) / roundDuration) * 100 : 0;
                     this.setCircleProgress(percent, 'action');
-                    if (data.repeat) { this.timerSubtext = `${this.currentRepetition}/${data.repeat.number}`; }
-                    else { this.timerSubtext = `${this.currentEmomRound}/${Math.floor(data.temps.during / data.temps.every)}`; }
+                    if (data.repeat) { 
+                        this.timerSubtext = `${this.currentRepetition}/${data.repeat.number}`; 
+                    } else { 
+                        this.timerSubtext = `${this.currentEmomRound}/${Math.floor(data.temps.during / data.temps.every)}`; 
+                    }
                 };
                 update();
                 this.countdownInterval = setInterval(() => {
                     if (this.isPaused) return;
-                    totalDuration--; currentRoundTime--;
+                    totalDuration--; 
+                    currentRoundTime--;
                     if (currentRoundTime === 10 && roundDuration >= 30) this.speak('Ten seconds left', 'en-US');
                     if (currentRoundTime > 0 && currentRoundTime <= 4) this.beep(880, 100);
                     if (!halfTimeAnnouncedInRound && currentRoundTime > 0 && currentRoundTime <= roundDuration / 2) {
@@ -489,7 +335,8 @@
                         halfTimeAnnouncedInRound = true;
                     }
                     if (currentRoundTime <= 0) { 
-                        this.beep(1200, 150); currentRoundTime = roundDuration; 
+                        this.beep(1200, 150); 
+                        currentRoundTime = roundDuration; 
                         halfTimeAnnouncedInRound = false;
                         if(totalDuration >= 0) this.currentEmomRound++;
                     }
@@ -501,8 +348,17 @@
                     }
                 }, 1000);
             },
-            startSerieMode(data) { this.isBreakTime = false; this.timerSubtext = `${this.currentRepetition}/${data.number}`; this.timerDisplay = 'GO!'; this.isSerieMode = true; this.setCircleProgress(100, 'action'); },
-            finishSerieSet() { this.isSerieMode = false; this.decideNextStep(); },
+            startSerieMode(data) { 
+                this.isBreakTime = false; 
+                this.timerSubtext = `${this.currentRepetition}/${data.number}`; 
+                this.timerDisplay = 'GO!'; 
+                this.isSerieMode = true; 
+                this.setCircleProgress(100, 'action'); 
+            },
+            finishSerieSet() { 
+                this.isSerieMode = false; 
+                this.decideNextStep(); 
+            },
             runPause(duration, onComplete, phase = 'pause', subtext = null) {
                 this.isBreakTime = true;
                 this.beep(1400, 200);
@@ -511,7 +367,7 @@
                     let remaining = duration;
                     let halfTimeAnnounced = false;
                     const update = () => {
-                        this.timerDisplay = remaining;
+                        this.timerDisplay = String(remaining);
                         const percent = duration > 0 ? ((duration - remaining) / duration) * 100 : 0;
                         this.setCircleProgress(percent, phase);
                     };
@@ -530,9 +386,15 @@
                         }
                         if (remaining > 0 && remaining <= 3) this.beep(880, 100);
                         update();
-                        if (remaining < 0) { clearInterval(this.countdownInterval); onPauseComplete(); }
+                        if (remaining < 0) { 
+                            clearInterval(this.countdownInterval); 
+                            onPauseComplete(); 
+                        }
                     }, 1000);
-                } else { this.isBreakTime = false; onComplete(); }
+                } else { 
+                    this.isBreakTime = false; 
+                    onComplete(); 
+                }
             },
             finishWorkout() { 
                 if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); 
@@ -553,7 +415,10 @@
                 }, 5000);
             }
         },
-        unmounted() { this.releaseWakeLock(); if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); }
+        unmounted() { 
+            this.releaseWakeLock(); 
+            if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); 
+        }
     }).mount('#app');
 </script>
 </body>
