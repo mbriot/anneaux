@@ -77,6 +77,7 @@
             box-sizing: border-box;
             min-height: 100vh;
             overflow-y: auto;
+            text-align: left;
         }
         .editor-header { 
             display: flex; 
@@ -96,16 +97,56 @@
         .btn-secondary { background-color: #6c757d; color: white; }
         .btn-primary { background-color: var(--action-color); color: white; }
         
-        .exercise-editor { border: 1px solid var(--track-color); border-radius: 8px; margin-bottom: 10px; padding: 15px; background-color: #111; }
-        .exercise-header { display: flex; justify-content: between; align-items: center; margin-bottom: 10px; }
-        .exercise-title { font-weight: bold; font-size: 1.1rem; flex-grow: 1; }
-        .exercise-controls { display: flex; gap: 8px; }
-        .exercise-controls button { padding: 4px 8px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
+        .exercise-editor { 
+            border: 1px solid var(--track-color); 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+            padding: 15px; 
+            background-color: #111; 
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .exercise-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 10px; 
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .exercise-title { 
+            font-weight: bold; 
+            font-size: 1.1rem; 
+            flex-grow: 1; 
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            min-width: 0;
+        }
+        .exercise-controls { 
+            display: flex; 
+            gap: 8px; 
+            flex-shrink: 0;
+        }
+        .exercise-controls button { 
+            padding: 4px 8px; 
+            font-size: 0.8rem; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            white-space: nowrap;
+        }
         .btn-add { background-color: var(--done-color); color: white; }
         .btn-remove { background-color: #dc3545; color: white; }
         
-        .exercise-details { font-size: 0.9rem; color: var(--text-secondary-color); }
-        .exercise-details div { margin: 5px 0; }
+        .exercise-details { 
+            font-size: 0.9rem; 
+            color: var(--text-secondary-color); 
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .exercise-details div { 
+            margin: 5px 0; 
+        }
         
         .repetition-controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
         .repetition-controls label { font-size: 0.9rem; }
@@ -113,8 +154,20 @@
         .repetition-controls button { padding: 2px 6px; font-size: 0.8rem; }
 
         /* Styles pour l'édition complète des exercices */
-        .exercise-param { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-        .exercise-param label { min-width: 120px; font-size: 0.9rem; font-weight: bold; }
+        .exercise-param { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin: 8px 0; 
+            flex-wrap: wrap;
+        }
+        .exercise-param label { 
+            min-width: 120px; 
+            font-size: 0.9rem; 
+            font-weight: bold; 
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
         .exercise-param input, .exercise-param select { 
             padding: 6px; 
             border: 1px solid #555; 
@@ -122,26 +175,46 @@
             background-color: #333; 
             color: white; 
             font-size: 0.9rem;
+            box-sizing: border-box;
         }
-        .exercise-param input[type="number"] { width: 80px; text-align: center; }
-        .exercise-param input[type="text"] { flex: 1; max-width: 200px; }
+        .exercise-param input[type="number"] { 
+            width: 80px; 
+            text-align: center; 
+            flex-shrink: 0;
+        }
+        .exercise-param input[type="text"] { 
+            flex: 1; 
+            max-width: 200px; 
+            min-width: 120px;
+        }
         .exercise-param input[type="checkbox"] { 
             width: 18px; 
             height: 18px; 
             margin-right: 8px;
             accent-color: var(--action-color);
+            flex-shrink: 0;
         }
-        .exercise-param select { min-width: 100px; }
+        .exercise-param select { 
+            min-width: 100px; 
+            flex-shrink: 0;
+        }
+        .exercise-param span {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
         
         .param-section { 
             border-top: 1px solid #444; 
             padding-top: 10px; 
             margin-top: 10px; 
+            overflow: hidden;
         }
         .param-section h4 { 
             margin: 0 0 10px 0; 
             color: var(--text-secondary-color); 
             font-size: 0.9rem; 
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         /* Styles pour les boutons de la page principale */
@@ -162,6 +235,32 @@
             background-color: #a0a0a0; 
             cursor: not-allowed; 
             opacity: 0.6;
+        }
+
+        /* Media queries pour petits écrans */
+        @media (max-width: 600px) {
+            .exercise-param {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .exercise-param label {
+                min-width: auto;
+                width: 100%;
+            }
+            .exercise-param input[type="text"] {
+                max-width: 100%;
+                width: 100%;
+            }
+            .exercise-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .exercise-controls {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -217,7 +316,7 @@
                 </div>
 
                 <!-- Paramètres spécifiques au type série -->
-                <div v-if="exercise.type === 'serie'" class="param-section">
+                <div v-if="exercise.type === 'serie' && exercise.number !== undefined" class="param-section">
                     <h4>Paramètres Série</h4>
                     <div class="exercise-param">
                         <label>Nombre de séries:</label>
@@ -231,7 +330,7 @@
                 </div>
 
                 <!-- Paramètres spécifiques au type EMOM -->
-                <div v-if="exercise.type === 'EMOM'" class="param-section">
+                <div v-if="exercise.type === 'EMOM' && exercise.temps" class="param-section">
                     <h4>Paramètres EMOM</h4>
                     <div class="exercise-param">
                         <label>Intervalle:</label>
@@ -250,12 +349,12 @@
                         <span>Oui</span>
                     </div>
                     
-                    <div v-if="exercise.hasRepeat" class="exercise-param">
+                    <div v-if="exercise.hasRepeat && exercise.repeat" class="exercise-param">
                         <label>Nombre de répétitions:</label>
                         <input v-model.number="exercise.repeat.number" type="number" min="1" max="10">
                         <span>fois</span>
                     </div>
-                    <div v-if="exercise.hasRepeat" class="exercise-param">
+                    <div v-if="exercise.hasRepeat && exercise.repeat" class="exercise-param">
                         <label>Pause entre blocs:</label>
                         <input v-model.number="exercise.repeat.pause_between" type="number" min="0" max="300">
                         <span>secondes</span>
@@ -388,25 +487,33 @@
                 this.editingPlan = JSON.parse(JSON.stringify(this.selectedWorkoutPlan));
                 
                 // S'assurer que tous les exercices ont les bonnes propriétés
-                this.editingPlan.forEach(exercise => {
+                this.editingPlan = this.editingPlan.map(exercise => {
+                    const newExercise = { ...exercise };
+                    
                     // Propriétés communes
-                    if (exercise.pause_after === undefined) exercise.pause_after = 30;
-                    if (exercise.countdown_before === undefined) exercise.countdown_before = 5;
+                    if (newExercise.pause_after === undefined) newExercise.pause_after = 30;
+                    if (newExercise.countdown_before === undefined) newExercise.countdown_before = 5;
                     
                     // Propriétés spécifiques par type
-                    if (exercise.type === 'serie') {
-                        if (!exercise.number) exercise.number = 3;
-                        if (exercise.rest === undefined) exercise.rest = 60;
-                    } else if (exercise.type === 'EMOM') {
-                        if (!exercise.temps) {
-                            exercise.temps = { every: 60, during: 300 };
+                    if (newExercise.type === 'serie') {
+                        if (!newExercise.number) newExercise.number = 3;
+                        if (newExercise.rest === undefined) newExercise.rest = 60;
+                    } else if (newExercise.type === 'EMOM') {
+                        if (!newExercise.temps) {
+                            newExercise.temps = { every: 60, during: 300 };
+                        } else {
+                            // S'assurer que temps a toutes les propriétés nécessaires
+                            if (!newExercise.temps.every) newExercise.temps.every = 60;
+                            if (!newExercise.temps.during) newExercise.temps.during = 300;
                         }
                         // Initialiser hasRepeat basé sur l'existence de repeat
-                        exercise.hasRepeat = !!exercise.repeat;
-                        if (exercise.hasRepeat && !exercise.repeat) {
-                            exercise.repeat = { number: 1, pause_between: 30 };
+                        newExercise.hasRepeat = !!newExercise.repeat;
+                        if (newExercise.hasRepeat && !newExercise.repeat) {
+                            newExercise.repeat = { number: 1, pause_between: 30 };
                         }
                     }
+                    
+                    return newExercise;
                 });
                 
                 this.isEditing = true;
@@ -477,33 +584,31 @@
             },
             onTypeChange(index) {
                 const exercise = this.editingPlan[index];
+                
+                // Créer un nouvel objet exercice avec les bonnes propriétés
+                const newExercise = {
+                    nom: exercise.nom,
+                    type: exercise.type,
+                    pause_after: exercise.pause_after !== undefined ? exercise.pause_after : 30,
+                    countdown_before: exercise.countdown_before !== undefined ? exercise.countdown_before : 5
+                };
+                
                 if (exercise.type === 'serie') {
-                    // S'assurer que les propriétés série existent
-                    if (!exercise.number) exercise.number = 3;
-                    if (!exercise.rest) exercise.rest = 60;
-                    // Supprimer les propriétés EMOM si elles existent
-                    delete exercise.temps;
-                    delete exercise.repeat;
-                    delete exercise.hasRepeat;
+                    // Propriétés spécifiques aux séries
+                    newExercise.number = exercise.number || 3;
+                    newExercise.rest = exercise.rest !== undefined ? exercise.rest : 60;
                 } else if (exercise.type === 'EMOM') {
-                    // S'assurer que les propriétés EMOM existent
-                    if (!exercise.temps) {
-                        exercise.temps = { every: 60, during: 300 };
-                    }
-                    // Déterminer si l'exercice a des répétitions
-                    exercise.hasRepeat = !!exercise.repeat;
-                    if (!exercise.hasRepeat) {
-                        delete exercise.repeat;
-                    } else if (!exercise.repeat) {
-                        exercise.repeat = { number: 1, pause_between: 30 };
-                    }
-                    // Supprimer les propriétés série si elles existent
-                    delete exercise.number;
-                    delete exercise.rest;
+                    // Propriétés spécifiques aux EMOM
+                    newExercise.temps = {
+                        every: (exercise.temps && exercise.temps.every) || 60,
+                        during: (exercise.temps && exercise.temps.during) || 300
+                    };
+                    newExercise.hasRepeat = false;
+                    // Ne pas ajouter repeat par défaut
                 }
-                // S'assurer que les propriétés communes existent
-                if (exercise.pause_after === undefined) exercise.pause_after = 30;
-                if (exercise.countdown_before === undefined) exercise.countdown_before = 5;
+                
+                // Remplacer l'exercice entier pour assurer la réactivité
+                this.editingPlan.splice(index, 1, newExercise);
             },
             onEmomRepeatChange(index) {
                 const exercise = this.editingPlan[index];
@@ -516,6 +621,8 @@
                     // Désactiver les répétitions
                     delete exercise.repeat;
                 }
+                // Déclencher une mise à jour réactive
+                this.editingPlan[index] = { ...exercise };
             },
             addNewExercise() {
                 const newExercise = {
