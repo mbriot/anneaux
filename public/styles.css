@@ -1,0 +1,558 @@
+:root {
+    --prep-color: #ff9800;
+    --action-color: #a855f7; /* Purple from screenshot */
+    --pause-color: #17a2b8;
+    --done-color: #28a745;
+    --track-color: #373737;
+    --bg-color: #000;
+    --text-color: #fff;
+    --text-secondary-color: #aaa;
+}
+
+html, body { 
+    height: 100%; 
+    width: 100%; 
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0; 
+    background-color: var(--bg-color); 
+    color: var(--text-color); 
+}
+
+body.editing { 
+    overflow-y: auto; 
+    align-items: flex-start; 
+}
+
+body.workout { 
+    overflow: hidden; 
+    align-items: flex-start; 
+}
+
+#app { 
+    text-align: center; 
+    background: var(--bg-color); 
+    padding: 1rem; 
+    width: 100%; 
+    height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    position: relative; 
+    box-sizing: border-box; 
+}
+
+#app.workout-mode { 
+    justify-content: flex-start; 
+    padding-top: 80px; 
+}
+
+select { 
+    width: 95%; 
+    padding: 0.8rem; 
+    margin-bottom: 1.5rem; 
+    border-radius: 4px; 
+    border: 1px solid #ccc; 
+    font-size: 1.2rem; 
+    background-color: #333; 
+    color: white; 
+    -webkit-appearance: none; 
+    -moz-appearance: none; 
+    appearance: none; 
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); 
+    background-repeat: no-repeat; 
+    background-position: right .7em top 50%; 
+    background-size: .65em auto; 
+}
+
+button { 
+    padding: 1rem 2rem; 
+    font-size: 1.2rem; 
+    cursor: pointer; 
+    border: none; 
+    background-color: var(--action-color); 
+    color: white; 
+    border-radius: 8px; 
+    width: 90%; 
+}
+
+button:disabled { 
+    background-color: #a0a0a0; 
+    cursor: not-allowed; 
+}
+
+.workout-view { 
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; 
+}
+
+.main-display { 
+    flex-grow: 1; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+}
+
+#plan-container { 
+    flex-shrink: 0; 
+    padding: 10px; 
+    border-top: 1px solid var(--track-color); 
+    max-height: 40%; 
+    overflow-y: auto; 
+    background-color: #111; 
+}
+
+.plan-list { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+    text-align: left; 
+    font-size: 1.6em;
+}
+
+.plan-list li { 
+    display: flex; 
+    flex-direction: column; 
+    padding: 8px 5px; 
+    border-bottom: 1px solid var(--track-color); 
+    font-size: 1rem; 
+}
+
+.plan-list li .exercise-main { 
+    display: flex; 
+    align-items: center; 
+}
+
+.plan-list li.current { 
+    color: gray; 
+}
+
+.sub-tasks { 
+    padding-left: 25px; 
+    margin-top: 5px; 
+    display: flex; 
+    align-items: center; 
+    flex-wrap: wrap; 
+}
+
+.sub-tasks label { 
+    font-size: 0.8rem; 
+    margin-right: 5px; 
+    font-style: italic; 
+}
+
+h1 {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    font-weight: bold;
+    white-space: normal;
+    overflow-wrap: break-word;
+    padding: 0 1rem;
+}
+
+.circle-timer { 
+    width: 80vw; 
+    max-width: 400px; 
+    position: relative; 
+    aspect-ratio: 1 / 1; 
+}
+
+.circle-timer svg { 
+    transform: rotate(-90deg); 
+    width: 100%; 
+    height: 100%; 
+}
+
+.timer-track, .timer-progress { 
+    fill: none; 
+    stroke-width: 10; 
+}
+
+.timer-track { 
+    stroke: var(--track-color); 
+    stroke-dasharray: 5 5; 
+}
+
+.timer-progress { 
+    stroke: var(--action-color); 
+    stroke-linecap: round; 
+    transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease; 
+}
+
+.timer-text-container { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+.timer-text { 
+    font-size: clamp(3.5rem, 18vw, 5.5rem); 
+    font-weight: bold; 
+    font-family: "Courier New", Courier, monospace; 
+}
+
+.timer-subtext { 
+    font-size: 2.2rem;  
+    margin-top: 10px; 
+}
+
+.timer-pause-text { 
+    font-size: 1.5rem; 
+    color: var(--pause-color); 
+    margin-top: 5px; 
+}
+
+.pause-btn { 
+    position: absolute; 
+    top: 25px; 
+    left: 15px; 
+    width: 45px; 
+    height: 45px; 
+    padding: 0; 
+    font-size: 1.3rem; 
+    border-radius: 50%; 
+    z-index: 10; 
+    background-color: rgba(255,255,255,0.1); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    color: #fff; 
+}
+
+.fullscreen-btn { 
+    position: absolute; 
+    top: 25px; 
+    left: 70px; 
+    width: 45px; 
+    height: 45px; 
+    padding: 0; 
+    font-size: 1.3rem; 
+    border-radius: 50%; 
+    z-index: 10; 
+    background-color: rgba(255,255,255,0.1); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    color: #fff; 
+}
+
+.skip-btn { 
+    position: absolute; 
+    top: 25px; 
+    left: 125px; 
+    width: 45px; 
+    height: 45px; 
+    padding: 0; 
+    font-size: 1.3rem; 
+    border-radius: 50%; 
+    z-index: 10; 
+    background-color: rgba(255,255,255,0.1); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    color: #fff; 
+}
+
+.total-time-display { 
+    position: absolute; 
+    top: 30px; 
+    right: 20px; 
+    font-size: 1.3rem; 
+    color: var(--text-secondary-color); 
+}
+
+.ok-btn {
+    width: auto; 
+    padding: 10px 20px; 
+    font-size: 1rem; 
+    margin-top: 0px; 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    margin-bottom: 10px;
+    background-color: var(--done-color);
+}
+
+/* Styles pour l'éditeur de séance */
+.editor-view { 
+    padding: 1rem; 
+    width: 100%; 
+    max-width: 800px; 
+    box-sizing: border-box;
+    min-height: 100vh;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.editor-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 1rem; 
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-color);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--track-color);
+    z-index: 10;
+}
+
+.editor-header h2 { 
+    margin: 0; 
+}
+
+.editor-actions { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.editor-actions button { 
+    padding: 8px 16px; 
+    font-size: 0.9rem; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+}
+
+.btn-secondary { 
+    background-color: #6c757d; 
+    color: white; 
+}
+
+.btn-primary { 
+    background-color: var(--action-color); 
+    color: white; 
+}
+
+.exercise-editor { 
+    border: 1px solid var(--track-color); 
+    border-radius: 8px; 
+    margin-bottom: 10px; 
+    padding: 15px; 
+    background-color: #111; 
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.exercise-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    margin-bottom: 10px; 
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.exercise-title { 
+    font-weight: bold; 
+    font-size: 1.1rem; 
+    flex-grow: 1; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
+}
+
+.exercise-controls { 
+    display: flex; 
+    gap: 8px; 
+    flex-shrink: 0;
+}
+
+.exercise-controls button { 
+    padding: 4px 8px; 
+    font-size: 0.8rem; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    white-space: nowrap;
+}
+
+.btn-add { 
+    background-color: var(--done-color); 
+    color: white; 
+}
+
+.btn-remove { 
+    background-color: #dc3545; 
+    color: white; 
+}
+
+.exercise-details { 
+    font-size: 0.9rem; 
+    color: var(--text-secondary-color); 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.exercise-details div { 
+    margin: 5px 0; 
+}
+
+.repetition-controls { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin-top: 10px; 
+}
+
+.repetition-controls label { 
+    font-size: 0.9rem; 
+}
+
+.repetition-controls input { 
+    width: 60px; 
+    padding: 4px; 
+    border: 1px solid #555; 
+    border-radius: 4px; 
+    background-color: #333; 
+    color: white; 
+    text-align: center; 
+}
+
+.repetition-controls button { 
+    padding: 2px 6px; 
+    font-size: 0.8rem; 
+}
+
+/* Styles pour l'édition complète des exercices */
+.exercise-param { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin: 8px 0; 
+    flex-wrap: wrap;
+}
+
+.exercise-param label { 
+    min-width: 120px; 
+    font-size: 0.9rem; 
+    font-weight: bold; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.exercise-param input, .exercise-param select { 
+    padding: 6px; 
+    border: 1px solid #555; 
+    border-radius: 4px; 
+    background-color: #333; 
+    color: white; 
+    font-size: 0.9rem;
+    box-sizing: border-box;
+}
+
+.exercise-param input[type="number"] { 
+    width: 80px; 
+    text-align: center; 
+    flex-shrink: 0;
+}
+
+.exercise-param input[type="text"] { 
+    flex: 1; 
+    max-width: 200px; 
+    min-width: 120px;
+}
+
+.exercise-param input[type="checkbox"] { 
+    width: 18px; 
+    height: 18px; 
+    margin-right: 8px;
+    accent-color: var(--action-color);
+    flex-shrink: 0;
+}
+
+.exercise-param select { 
+    min-width: 100px; 
+    flex-shrink: 0;
+}
+
+.exercise-param span {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.param-section { 
+    border-top: 1px solid #444; 
+    padding-top: 10px; 
+    margin-top: 10px; 
+    overflow: hidden;
+}
+
+.param-section h4 { 
+    margin: 0 0 10px 0; 
+    color: var(--text-secondary-color); 
+    font-size: 0.9rem; 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Styles pour les boutons de la page principale */
+.main-buttons { 
+    display: flex; 
+    gap: 10px; 
+    justify-content: center; 
+    margin-top: 15px; 
+    width: 100%; 
+}
+
+.main-buttons button { 
+    flex: 1; 
+    padding: 12px 20px; 
+    font-size: 1.1rem; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-weight: bold;
+    max-width: 200px;
+}
+
+.btn-edit { 
+    background-color: #dc3545; 
+    color: white; 
+}
+
+.btn-start { 
+    background-color: var(--done-color); 
+    color: white; 
+}
+
+.btn-edit:disabled, .btn-start:disabled { 
+    background-color: #a0a0a0; 
+    cursor: not-allowed; 
+    opacity: 0.6;
+}
+
+/* Media queries pour petits écrans */
+@media (max-width: 600px) {
+    .exercise-param {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .exercise-param label {
+        min-width: auto;
+        width: 100%;
+    }
+    .exercise-param input[type="text"] {
+        max-width: 100%;
+        width: 100%;
+    }
+    .exercise-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .exercise-controls {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
