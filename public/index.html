@@ -16,8 +16,10 @@
             --text-color: #fff;
             --text-secondary-color: #aaa;
         }
-        html, body { height: 100%; width: 100%; overflow: hidden; }
+        html, body { height: 100%; width: 100%; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; margin: 0; background-color: var(--bg-color); color: var(--text-color); }
+        body.editing { overflow-y: auto; align-items: flex-start; }
+        body.workout { overflow: hidden; }
         #app { text-align: center; background: var(--bg-color); padding: 1rem; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
         select { width: 95%; padding: 0.8rem; margin-bottom: 1.5rem; border-radius: 4px; border: 1px solid #ccc; font-size: 1.2rem; background-color: #333; color: white; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto; }
         button { padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer; border: none; background-color: var(--action-color); color: white; border-radius: 8px; width: 90%; }
@@ -65,18 +67,216 @@
             width: auto; padding: 10px 20px; font-size: 1rem; margin-top: 0px; color: white; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 10px;
             background-color: var(--done-color);
         }
+
+        /* Styles pour l'éditeur de séance */
+        .editor-view { 
+            padding: 1rem; 
+            width: 100%; 
+            max-width: 800px; 
+            box-sizing: border-box;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+        .editor-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1rem; 
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            padding: 10px 0;
+            border-bottom: 1px solid var(--track-color);
+            z-index: 10;
+        }
+        .editor-header h2 { margin: 0; }
+        .editor-actions { display: flex; gap: 10px; }
+        .editor-actions button { padding: 8px 16px; font-size: 0.9rem; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-primary { background-color: var(--action-color); color: white; }
+        
+        .exercise-editor { border: 1px solid var(--track-color); border-radius: 8px; margin-bottom: 10px; padding: 15px; background-color: #111; }
+        .exercise-header { display: flex; justify-content: between; align-items: center; margin-bottom: 10px; }
+        .exercise-title { font-weight: bold; font-size: 1.1rem; flex-grow: 1; }
+        .exercise-controls { display: flex; gap: 8px; }
+        .exercise-controls button { padding: 4px 8px; font-size: 0.8rem; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-add { background-color: var(--done-color); color: white; }
+        .btn-remove { background-color: #dc3545; color: white; }
+        
+        .exercise-details { font-size: 0.9rem; color: var(--text-secondary-color); }
+        .exercise-details div { margin: 5px 0; }
+        
+        .repetition-controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .repetition-controls label { font-size: 0.9rem; }
+        .repetition-controls input { width: 60px; padding: 4px; border: 1px solid #555; border-radius: 4px; background-color: #333; color: white; text-align: center; }
+        .repetition-controls button { padding: 2px 6px; font-size: 0.8rem; }
+
+        /* Styles pour l'édition complète des exercices */
+        .exercise-param { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+        .exercise-param label { min-width: 120px; font-size: 0.9rem; font-weight: bold; }
+        .exercise-param input, .exercise-param select { 
+            padding: 6px; 
+            border: 1px solid #555; 
+            border-radius: 4px; 
+            background-color: #333; 
+            color: white; 
+            font-size: 0.9rem;
+        }
+        .exercise-param input[type="number"] { width: 80px; text-align: center; }
+        .exercise-param input[type="text"] { flex: 1; max-width: 200px; }
+        .exercise-param input[type="checkbox"] { 
+            width: 18px; 
+            height: 18px; 
+            margin-right: 8px;
+            accent-color: var(--action-color);
+        }
+        .exercise-param select { min-width: 100px; }
+        
+        .param-section { 
+            border-top: 1px solid #444; 
+            padding-top: 10px; 
+            margin-top: 10px; 
+        }
+        .param-section h4 { 
+            margin: 0 0 10px 0; 
+            color: var(--text-secondary-color); 
+            font-size: 0.9rem; 
+        }
+
+        /* Styles pour les boutons de la page principale */
+        .main-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; width: 100%; }
+        .main-buttons button { 
+            flex: 1; 
+            padding: 12px 20px; 
+            font-size: 1.1rem; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            max-width: 200px;
+        }
+        .btn-edit { background-color: #dc3545; color: white; }
+        .btn-start { background-color: var(--done-color); color: white; }
+        .btn-edit:disabled, .btn-start:disabled { 
+            background-color: #a0a0a0; 
+            cursor: not-allowed; 
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
 <div id="app">
-    <div v-if="!isWorkoutStarted">
+    <div v-if="!isWorkoutStarted && !isEditing">
         <h2>Choisissez votre séance</h2>
         <select v-model="selectedWorkoutPlan">
             <option :value="null" disabled>-- Sélectionnez un programme --</option>
             <option v-for="(workout, key) in predefinedWorkouts" :key="key" :value="workout.plan">{{ workout.name }}</option>
         </select>
         <br>
-        <button @click="startWorkout" :disabled="!selectedWorkoutPlan">Commencer la séance</button>
+        <div class="main-buttons">
+            <button @click="editWorkout" :disabled="!selectedWorkoutPlan" class="btn-edit">Éditer la séance</button>
+            <button @click="startWorkout" :disabled="!selectedWorkoutPlan" class="btn-start">Commencer directement</button>
+        </div>
+    </div>
+
+    <div v-if="isEditing" class="editor-view">
+        <div class="editor-header">
+            <h2>Éditer la séance</h2>
+            <div class="editor-actions">
+                <button @click="cancelEdit" class="btn-secondary">Annuler</button>
+                <button @click="saveAndStart" class="btn-primary">Sauver et Commencer</button>
+            </div>
+        </div>
+
+        <button @click="addNewExercise" class="btn-add" style="width: 100%; margin-bottom: 15px; padding: 10px;">+ Ajouter un exercice</button>
+
+        <div v-for="(exercise, index) in editingPlan" :key="index" class="exercise-editor">
+            <div class="exercise-header">
+                <div class="exercise-title">{{ exercise.nom }}</div>
+                <div class="exercise-controls">
+                    <button @click="moveExerciseUp(index)" :disabled="index === 0" class="btn-secondary">↑</button>
+                    <button @click="moveExerciseDown(index)" :disabled="index === editingPlan.length - 1" class="btn-secondary">↓</button>
+                    <button @click="removeExercise(index)" class="btn-remove">Supprimer</button>
+                </div>
+            </div>
+            
+            <div class="exercise-details">
+                <!-- Paramètres de base -->
+                <div class="exercise-param">
+                    <label>Nom:</label>
+                    <input v-model="exercise.nom" type="text" placeholder="Nom de l'exercice">
+                </div>
+                
+                <div class="exercise-param">
+                    <label>Type:</label>
+                    <select v-model="exercise.type" @change="onTypeChange(index)">
+                        <option value="serie">Série</option>
+                        <option value="EMOM">EMOM</option>
+                    </select>
+                </div>
+
+                <!-- Paramètres spécifiques au type série -->
+                <div v-if="exercise.type === 'serie'" class="param-section">
+                    <h4>Paramètres Série</h4>
+                    <div class="exercise-param">
+                        <label>Nombre de séries:</label>
+                        <input v-model.number="exercise.number" type="number" min="1" max="20">
+                    </div>
+                    <div class="exercise-param">
+                        <label>Repos entre séries:</label>
+                        <input v-model.number="exercise.rest" type="number" min="0" max="600">
+                        <span>secondes</span>
+                    </div>
+                </div>
+
+                <!-- Paramètres spécifiques au type EMOM -->
+                <div v-if="exercise.type === 'EMOM'" class="param-section">
+                    <h4>Paramètres EMOM</h4>
+                    <div class="exercise-param">
+                        <label>Intervalle:</label>
+                        <input v-model.number="exercise.temps.every" type="number" min="10" max="300">
+                        <span>secondes</span>
+                    </div>
+                    <div class="exercise-param">
+                        <label>Durée totale:</label>
+                        <input v-model.number="exercise.temps.during" type="number" min="30" max="1800">
+                        <span>secondes</span>
+                    </div>
+                    
+                    <div class="exercise-param">
+                        <label>Répéter le bloc:</label>
+                        <input v-model="exercise.hasRepeat" type="checkbox" @change="onEmomRepeatChange(index)">
+                        <span>Oui</span>
+                    </div>
+                    
+                    <div v-if="exercise.hasRepeat" class="exercise-param">
+                        <label>Nombre de répétitions:</label>
+                        <input v-model.number="exercise.repeat.number" type="number" min="1" max="10">
+                        <span>fois</span>
+                    </div>
+                    <div v-if="exercise.hasRepeat" class="exercise-param">
+                        <label>Pause entre blocs:</label>
+                        <input v-model.number="exercise.repeat.pause_between" type="number" min="0" max="300">
+                        <span>secondes</span>
+                    </div>
+                </div>
+
+                <!-- Paramètres de timing -->
+                <div class="param-section">
+                    <h4>Timing</h4>
+                    <div class="exercise-param">
+                        <label>Pause après exercice:</label>
+                        <input v-model.number="exercise.pause_after" type="number" min="0" max="600">
+                        <span>secondes</span>
+                    </div>
+                    <div class="exercise-param">
+                        <label>Préparation avant:</label>
+                        <input v-model.number="exercise.countdown_before" type="number" min="0" max="60">
+                        <span>secondes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div v-if="isWorkoutStarted" class="workout-view">
         <button @click="togglePause" class="pause-btn">{{ isPaused ? '▶️' : '⏸️' }}</button>
@@ -123,7 +323,11 @@
                 totalWorkoutTime: 0, totalTimeInterval: null,
                 exerciseName: '', timerDisplay: '', timerSubtext: '',
                 countdownInterval: null, isWorkoutStarted: false, wakeLock: null, audioContext: null,
-                progressStyle: {}, circleCircumference: 0, phaseColor: 'var(--action-color)'
+                progressStyle: {}, circleCircumference: 0, phaseColor: 'var(--action-color)',
+                // Variables pour l'éditeur
+                isEditing: false,
+                editingPlan: [],
+                originalPlan: null
             };
         },
         async created() {
@@ -176,6 +380,152 @@
                     }
                 }
             },
+            // Méthodes pour l'éditeur de séance
+            editWorkout() {
+                if (!this.selectedWorkoutPlan) return;
+                this.originalPlan = JSON.parse(JSON.stringify(this.selectedWorkoutPlan));
+                this.editingPlan = JSON.parse(JSON.stringify(this.selectedWorkoutPlan));
+                
+                // S'assurer que tous les exercices ont les bonnes propriétés
+                this.editingPlan.forEach(exercise => {
+                    // Propriétés communes
+                    if (exercise.pause_after === undefined) exercise.pause_after = 30;
+                    if (exercise.countdown_before === undefined) exercise.countdown_before = 5;
+                    
+                    // Propriétés spécifiques par type
+                    if (exercise.type === 'serie') {
+                        if (!exercise.number) exercise.number = 3;
+                        if (exercise.rest === undefined) exercise.rest = 60;
+                    } else if (exercise.type === 'EMOM') {
+                        if (!exercise.temps) {
+                            exercise.temps = { every: 60, during: 300 };
+                        }
+                        // Initialiser hasRepeat basé sur l'existence de repeat
+                        exercise.hasRepeat = !!exercise.repeat;
+                        if (exercise.hasRepeat && !exercise.repeat) {
+                            exercise.repeat = { number: 1, pause_between: 30 };
+                        }
+                    }
+                });
+                
+                this.isEditing = true;
+                document.body.classList.add('editing');
+                document.body.classList.remove('workout');
+            },
+            cancelEdit() {
+                this.isEditing = false;
+                this.editingPlan = [];
+                this.originalPlan = null;
+                document.body.classList.remove('editing');
+            },
+            saveAndStart() {
+                // Nettoyer les propriétés helper avant de sauvegarder
+                const cleanedPlan = JSON.parse(JSON.stringify(this.editingPlan));
+                cleanedPlan.forEach((exercise, index) => {
+                    // Supprimer la propriété helper hasRepeat
+                    const originalExercise = this.editingPlan[index];
+                    delete exercise.hasRepeat;
+                    // Si EMOM sans répétition, s'assurer que repeat n'existe pas
+                    if (exercise.type === 'EMOM' && !originalExercise.hasRepeat) {
+                        delete exercise.repeat;
+                    }
+                });
+                
+                this.selectedWorkoutPlan = cleanedPlan;
+                this.isEditing = false;
+                document.body.classList.remove('editing');
+                this.startWorkout();
+            },
+            removeExercise(index) {
+                if (this.editingPlan.length > 1) {
+                    this.editingPlan.splice(index, 1);
+                }
+            },
+            moveExerciseUp(index) {
+                if (index > 0) {
+                    const exercise = this.editingPlan.splice(index, 1)[0];
+                    this.editingPlan.splice(index - 1, 0, exercise);
+                }
+            },
+            moveExerciseDown(index) {
+                if (index < this.editingPlan.length - 1) {
+                    const exercise = this.editingPlan.splice(index, 1)[0];
+                    this.editingPlan.splice(index + 1, 0, exercise);
+                }
+            },
+            increaseReps(index) {
+                if (this.editingPlan[index].type === 'serie') {
+                    this.editingPlan[index].number++;
+                }
+            },
+            decreaseReps(index) {
+                if (this.editingPlan[index].type === 'serie' && this.editingPlan[index].number > 1) {
+                    this.editingPlan[index].number--;
+                }
+            },
+            increaseEmomReps(index) {
+                if (this.editingPlan[index].type === 'EMOM' && this.editingPlan[index].repeat) {
+                    this.editingPlan[index].repeat.number++;
+                }
+            },
+            decreaseEmomReps(index) {
+                if (this.editingPlan[index].type === 'EMOM' && this.editingPlan[index].repeat && this.editingPlan[index].repeat.number > 1) {
+                    this.editingPlan[index].repeat.number--;
+                }
+            },
+            onTypeChange(index) {
+                const exercise = this.editingPlan[index];
+                if (exercise.type === 'serie') {
+                    // S'assurer que les propriétés série existent
+                    if (!exercise.number) exercise.number = 3;
+                    if (!exercise.rest) exercise.rest = 60;
+                    // Supprimer les propriétés EMOM si elles existent
+                    delete exercise.temps;
+                    delete exercise.repeat;
+                    delete exercise.hasRepeat;
+                } else if (exercise.type === 'EMOM') {
+                    // S'assurer que les propriétés EMOM existent
+                    if (!exercise.temps) {
+                        exercise.temps = { every: 60, during: 300 };
+                    }
+                    // Déterminer si l'exercice a des répétitions
+                    exercise.hasRepeat = !!exercise.repeat;
+                    if (!exercise.hasRepeat) {
+                        delete exercise.repeat;
+                    } else if (!exercise.repeat) {
+                        exercise.repeat = { number: 1, pause_between: 30 };
+                    }
+                    // Supprimer les propriétés série si elles existent
+                    delete exercise.number;
+                    delete exercise.rest;
+                }
+                // S'assurer que les propriétés communes existent
+                if (exercise.pause_after === undefined) exercise.pause_after = 30;
+                if (exercise.countdown_before === undefined) exercise.countdown_before = 5;
+            },
+            onEmomRepeatChange(index) {
+                const exercise = this.editingPlan[index];
+                if (exercise.hasRepeat) {
+                    // Activer les répétitions
+                    if (!exercise.repeat) {
+                        exercise.repeat = { number: 1, pause_between: 30 };
+                    }
+                } else {
+                    // Désactiver les répétitions
+                    delete exercise.repeat;
+                }
+            },
+            addNewExercise() {
+                const newExercise = {
+                    nom: "Nouvel exercice",
+                    type: "serie",
+                    number: 3,
+                    rest: 60,
+                    pause_after: 30,
+                    countdown_before: 5
+                };
+                this.editingPlan.push(newExercise);
+            },
             setCircleProgress(percent, phase) {
                 const offset = this.circleCircumference - (percent / 100) * this.circleCircumference;
                 let color = 'var(--action-color)';
@@ -216,6 +566,8 @@
                 this.workoutPlan = plan; this.currentExerciseIndex = -1; this.isWorkoutStarted = true; this.isPaused = false; this.isSerieMode = false;
                 this.totalWorkoutTime = 0;
                 this.totalTimeInterval = setInterval(() => { if (!this.isPaused) this.totalWorkoutTime++; }, 1000);
+                document.body.classList.add('workout');
+                document.body.classList.remove('editing');
                 this.requestWakeLock();
                 this.startNextExercise();
             },
@@ -339,7 +691,12 @@
                 this.speak('Workout complete! Well done', 'en-US');
                 this.isPaused = false; 
                 this.isSerieMode = false; 
-                this.releaseWakeLock(); 
+                this.releaseWakeLock();
+                // Ajouter possibilité de retour après 5 secondes
+                setTimeout(() => {
+                    this.isWorkoutStarted = false;
+                    document.body.classList.remove('workout');
+                }, 5000);
             }
         },
         unmounted() { this.releaseWakeLock(); if (this.totalTimeInterval) clearInterval(this.totalTimeInterval); }
